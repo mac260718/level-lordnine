@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LORD NINE マスタリー・製作ツール</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --gold-primary: #c5a059;
+            --gold-dark: #a68545;
+            --bg-dark: #0f1115;
+            --card-bg: rgba(30, 41, 59, 0.7);
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .accent-gold { color: var(--gold-primary); }
+        .bg-gold { background-color: var(--gold-primary); }
+        .border-gold { border-color: var(--gold-primary); }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .tab-active {
+            border-bottom: 3px solid var(--gold-primary);
+            color: var(--gold-primary);
+        }
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .row-highlight {
+            background-color: rgba(197, 160, 89, 0.15) !important;
+            border-left: 4px solid var(--gold-primary);
+        }
+
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid var(--gold-primary);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .input-gold {
+            background: rgba(15, 17, 21, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+        .input-gold:focus {
+            border-color: var(--gold-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.2);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-6 lg:p-10">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="mb-10 text-center relative">
+            <div class="inline-block relative">
+                <h1 class="text-4xl md:text-5xl font-bold accent-gold mb-2 tracking-[0.2em] uppercase italic text-shadow-lg">Lord Nine</h1>
+                <div class="h-1 w-full bg-gold absolute -bottom-1 left-0 rounded-full opacity-50"></div>
+            </div>
+            <p class="text-slate-400 text-sm mt-4 tracking-widest font-light">WEB MASTERY & CRAFTING MANAGER</p>
+            
+            <!-- Sync Indicator -->
+            <div id="sync-status" class="absolute top-0 right-0 flex items-center gap-2 text-[10px] text-slate-500 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 hidden">
+                <div class="spinner" id="cloud-spinner"></div>
+                <span id="sync-text">同期準備中</span>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="flex justify-center space-x-4 md:space-x-12 mb-8 border-b border-slate-800">
+            <button onclick="switchTab('mastery')" id="tab-mastery" class="pb-3 px-6 transition-all tab-active font-bold text-sm md:text-base flex items-center gap-2">
+                <i class="fa-solid fa-scroll"></i> マスタリー
+            </button>
+            <button onclick="switchTab('crafting')" id="tab-crafting" class="pb-3 px-6 transition-all text-slate-500 font-bold text-sm md:text-base flex items-center gap-2">
+                <i class="fa-solid fa-hammer"></i> 製作シミュ
+            </button>
+        </div>
+
+        <!-- Mastery Section -->
+        <div id="section-mastery" class="fade-in space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Input Panel -->
+                <div class="glass-card p-6 space-y-6 border-t-4 border-gold">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold flex items-center gap-2 text-slate-200">
+                            <span class="w-1.5 h-6 bg-gold rounded-full"></span>
+                            ステータス
+                        </h3>
+                        <button onclick="resetMastery()" class="text-[10px] text-slate-500 hover:text-slate-300">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1.5 font-bold uppercase tracking-wider">現在のレベル</label>
+                            <div class="relative">
+                                <input type="number" id="input-lv" value="50" min="1" max="120"
+                                    class="w-full input-gold rounded-xl py-3 px-4 text-xl font-bold text-white">
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 font-bold font-mono">LV</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1.5 font-bold uppercase tracking-wider">進行度 (％)</label>
+                            <div class="relative">
+                                <input type="number" id="input-percent" value="0" step="0.01" min="0" max="99.99"
+                                    class="w-full input-gold rounded-xl py-3 px-4 text-lg text-white font-mono">
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 font-bold font-mono">%</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1.5 font-bold uppercase tracking-wider">現在の分給 (Exp/分)</label>
+                            <div class="relative">
+                                <input type="number" id="input-minexp" value="1000000"
+                                    class="w-full input-gold rounded-xl py-3 px-4 text-lg font-mono text-white">
+                                <i class="fa-solid fa-bolt absolute right-4 top-1/2 -translate-y-1/2 text-slate-600"></i>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1 pl-1">※狩りで実測した分給を入力</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboards -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Daily Stats -->
+                        <div class="glass-card p-6 flex flex-col justify-between border-b-2 border-transparent hover:border-gold transition-all">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">1日の合計獲得予測 (スケジュール込)</span>
+                                <div class="text-3xl font-bold accent-gold my-2 font-mono" id="res-daily-exp">--</div>
+                            </div>
+                            <div class="flex items-center justify-between text-[11px] text-slate-500">
+                                <span>24時間予測</span>
+                                <span class="font-mono text-slate-300" id="res-daily-pct">-- %</span>
+                            </div>
+                        </div>
+
+                        <!-- Time to Level Up -->
+                        <div class="glass-card p-6 flex flex-col justify-between border-b-2 border-transparent hover:border-green-500 transition-all">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">レベルアップまでの残り日数</span>
+                                <div class="text-2xl font-bold text-green-400 my-2" id="res-time-left">--</div>
+                            </div>
+                            <div class="flex items-center justify-between text-[11px] text-slate-500">
+                                <span>残り必要経験値</span>
+                                <span class="font-mono text-slate-300" id="res-exp-left">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator List -->
+                    <div class="glass-card p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xs font-bold flex items-center gap-2 text-slate-200 uppercase tracking-wider">
+                                <i class="fa-solid fa-calendar-check text-gold"></i>
+                                24時間スケジュール管理
+                            </h3>
+                            <button onclick="addSimulator()" class="bg-gold/10 hover:bg-gold/20 text-gold text-[10px] px-3 py-1.5 rounded-lg font-bold transition-all border border-gold/20">
+                                <i class="fa-solid fa-plus mr-1"></i> 条件を追加
+                            </button>
+                        </div>
+                        
+                        <div id="simulators-container" class="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                            <!-- JS で生成 -->
+                        </div>
+
+                        <div id="sim-warning" class="hidden mt-4 p-2 bg-red-900/20 border border-red-900/50 rounded text-[10px] text-red-400 text-center">
+                            合計時間が24時間を超えています（現在: <span id="total-sim-hours">0</span>h）
+                        </div>
+                        <div id="sim-info" class="mt-4 text-[10px] text-slate-500 text-right">
+                            ※24時間に満たない時間は「基本の分給」で補完されます
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="glass-card overflow-hidden">
+                <div class="p-4 border-b border-slate-800 bg-slate-800/40 flex justify-between items-center">
+                    <h3 class="font-bold text-xs text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol"></i> 経験値マスタ (Lv.1 - 120)
+                    </h3>
+                </div>
+                <div class="max-h-[400px] overflow-y-auto relative scroll-smooth">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead class="sticky top-0 bg-slate-800 text-slate-500 text-[9px] uppercase font-bold z-10 border-b border-slate-700">
+                            <tr>
+                                <th class="p-4">Level</th>
+                                <th class="p-4 text-right">必要Exp</th>
+                                <th class="p-4 text-center">時給獲得率</th>
+                                <th class="p-4 text-center">所要日数 (24h)</th>
+                                <th class="p-4 text-right">累計Exp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mastery-table-body" class="divide-y divide-slate-800/50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crafting Section -->
+        <div id="section-crafting" class="fade-in hidden space-y-6">
+            <div class="glass-card p-6 md:p-8 border-t-4 border-green-600">
+                <h3 class="text-xl font-bold flex items-center gap-3 mb-8 text-slate-200">
+                    <span class="w-2 h-8 bg-green-600 rounded-full"></span>
+                    製作シミュレーター
+                </h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="space-y-8">
+                        <div>
+                            <h4 class="text-[11px] font-bold mb-4 text-slate-400 uppercase tracking-widest">目標個数</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+                                    <label class="block text-[10px] text-slate-500 mb-2 font-bold text-center">燦爛な生命の核</label>
+                                    <input type="number" id="craft-target-high" value="0"
+                                        class="w-full bg-transparent text-center text-3xl font-bold text-green-400 focus:outline-none">
+                                </div>
+                                <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+                                    <label class="block text-[10px] text-slate-500 mb-2 font-bold text-center">生命の核</label>
+                                    <input type="number" id="craft-target-normal" value="0"
+                                        class="w-full bg-transparent text-center text-3xl font-bold text-slate-300 focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-[11px] font-bold mb-4 text-slate-400 uppercase tracking-widest">在庫入力</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[9px] text-slate-500 uppercase font-bold pl-1">時の欠片</label>
+                                    <input type="number" id="inv-shards" value="0" class="w-full input-gold rounded-lg p-2 text-center font-mono text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] text-slate-500 uppercase font-bold pl-1">黒オール</label>
+                                    <input type="number" id="inv-ore" value="0" class="w-full input-gold rounded-lg p-2 text-center font-mono text-sm">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] text-green-600 uppercase font-bold pl-1">凝縮黒オール</label>
+                                    <input type="number" id="inv-ore-cond" value="0" class="w-full input-gold border-green-900/50 rounded-lg p-2 text-center font-mono text-sm text-green-400">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col h-full">
+                        <h4 class="text-[11px] font-bold mb-4 text-slate-400 uppercase tracking-widest">不足素材</h4>
+                        <div id="craft-results" class="space-y-4 flex-grow"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-16 pb-12 text-center text-slate-600 text-[10px] tracking-widest uppercase">
+            &copy; 2024 LORD NINE FAN UTILITY | VERSION 2.5
+        </footer>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+        // Constants
+        const MASTERY_DATA = {
+            1: 22, 2: 80, 3: 120, 4: 168, 5: 280, 6: 420, 7: 637, 8: 788, 9: 893, 10: 1120,
+            11: 1415, 12: 2247, 13: 1874, 14: 2214, 15: 2693, 16: 3260, 17: 4164, 18: 5058, 19: 6256, 20: 7360,
+            21: 11981, 22: 13200, 23: 15034, 24: 17261, 25: 20276, 26: 26924, 27: 33370, 28: 40393, 29: 49018, 30: 59520,
+            31: 122204, 32: 158400, 33: 212475, 34: 291412, 35: 372081, 36: 630695, 37: 870262, 38: 1145205, 39: 1492886, 40: 1670761,
+            41: 4216238, 42: 5096534, 43: 6089093, 44: 7405619, 45: 7904218, 46: 9684642, 47: 12446158, 48: 15568760, 49: 19325398, 50: 20713944,
+            51: 43867994, 52: 51700695, 53: 60463003, 54: 72106047, 55: 79091547, 56: 95376531, 57: 120655711, 58: 148764869, 59: 182554073, 60: 216928490,
+            61: 386507803, 62: 448570000, 63: 512841741, 64: 597524182, 65: 695984525, 66: 820888107, 67: 1005002687, 68: 1224413100, 69: 1443823514, 70: 1724317442,
+            71: 2420631622, 72: 2735200000, 73: 3087214520, 74: 3523167195, 75: 4007373232, 76: 4593976654, 77: 5531272727, 78: 6241779412, 79: 7187748853, 80: 8294174624,
+            81: 11818633326, 82: 15279802336, 83: 17380222222, 84: 20284045045, 85: 23215228758, 86: 26879269341, 87: 31986409483, 88: 36672895251, 89: 42154914692, 90: 48528327586,
+            91: 57420217391, 92: 63728169231, 93: 86074665354, 94: 120472075673, 95: 195412625000, 96: 307837090278, 97: 526941894374, 98: 600000000000, 99: 650000000000, 100: 700000000000,
+            110: 1200000000000, 120: 0
+        };
+
+        const getExp = (lv) => MASTERY_DATA[lv] || (lv > 110 ? 1200000000000 : 22);
+        const formatNum = (n) => new Intl.NumberFormat().format(Math.floor(n));
+
+        // State
+        let currentUserId = null;
+        let simulators = [];
+        let isSaving = false;
+
+        // Firebase Setup
+        const firebaseConfig = window.__firebase_config ? JSON.parse(window.__firebase_config) : { apiKey: "" };
+        const appId = window.__app_id || 'lord-nine-master-v3';
+        let db, auth;
+
+        const initFirebase = async () => {
+            if (!firebaseConfig.apiKey) {
+                console.warn("Firebase API key missing. Running in local mode.");
+                calculateMastery(true);
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Rule 3: Auth First
+                if (typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token) {
+                    await signInWithCustomToken(auth, window.__initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        document.getElementById('sync-status').classList.remove('hidden');
+                        loadData(user.uid);
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase Auth failed:", e);
+                calculateMastery(true);
+            }
+        };
+
+        // Logic
+        window.addSimulator = () => {
+            const id = Date.now();
+            simulators.push({ id, label: "新規条件", hours: 1, expPerMin: 1000000 });
+            renderSimulators();
+            calculateMastery();
+        };
+
+        window.removeSimulator = (id) => {
+            simulators = simulators.filter(s => s.id !== id);
+            renderSimulators();
+            calculateMastery();
+        };
+
+        window.updateSimulator = (id, field, value) => {
+            const sim = simulators.find(s => s.id === id);
+            if (sim) {
+                sim[field] = field === 'label' ? value : parseFloat(value) || 0;
+                calculateMastery();
+            }
+        };
+
+        const renderSimulators = () => {
+            const container = document.getElementById('simulators-container');
+            container.innerHTML = simulators.map(sim => `
+                <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center gap-3 fade-in group">
+                    <div class="flex-grow min-w-[120px]">
+                        <input type="text" value="${sim.label}" oninput="updateSimulator(${sim.id}, 'label', this.value)"
+                            class="bg-transparent border-none text-[11px] font-bold text-slate-300 w-full focus:ring-0">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">時間(h)</span>
+                        <input type="number" value="${sim.hours}" step="0.5" min="0" oninput="updateSimulator(${sim.id}, 'hours', this.value)"
+                            class="bg-slate-800/50 border border-slate-700 rounded px-2 py-1 w-16 text-center text-xs font-mono">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">分給</span>
+                        <input type="number" value="${sim.expPerMin}" oninput="updateSimulator(${sim.id}, 'expPerMin', this.value)"
+                            class="bg-slate-800/50 border border-slate-700 rounded px-2 py-1 w-28 text-right text-xs font-mono text-gold">
+                    </div>
+                    <button onclick="removeSimulator(${sim.id})" class="text-slate-600 hover:text-red-400 ml-auto transition-colors px-2">
+                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                    </button>
+                </div>
+            `).join('');
+        };
+
+        window.calculateMastery = (shouldScroll = false) => {
+            const lv = parseInt(document.getElementById('input-lv').value) || 1;
+            const percent = parseFloat(document.getElementById('input-percent').value) || 0;
+            const baseMin = parseFloat(document.getElementById('input-minexp').value) || 0;
+
+            const nextExp = getExp(lv);
+            const expRemaining = nextExp * (1 - percent / 100);
+
+            // Simulator logic
+            let dailyExp = 0;
+            let totalHours = 0;
+            simulators.forEach(s => {
+                dailyExp += (s.expPerMin * 60 * s.hours);
+                totalHours += s.hours;
+            });
+
+            // Fill remaining with base
+            const remainingHours = Math.max(0, 24 - totalHours);
+            const finalDailyExp = dailyExp + (baseMin * 60 * remainingHours);
+
+            document.getElementById('total-sim-hours').innerText = totalHours.toFixed(1);
+            document.getElementById('sim-warning').classList.toggle('hidden', totalHours <= 24.1);
+
+            let timeLeftStr = "--";
+            if (finalDailyExp > 0) {
+                const daysNeeded = expRemaining / finalDailyExp;
+                if (daysNeeded < 1) timeLeftStr = `約 ${(daysNeeded * 24).toFixed(1)} 時間`;
+                else timeLeftStr = `約 ${daysNeeded.toFixed(2)} 日`;
+            }
+
+            document.getElementById('res-daily-exp').innerText = formatNum(finalDailyExp);
+            document.getElementById('res-daily-pct').innerText = ((finalDailyExp / nextExp) * 100).toFixed(3) + "% 増";
+            document.getElementById('res-time-left').innerText = timeLeftStr;
+            document.getElementById('res-exp-left').innerText = formatNum(expRemaining);
+
+            renderTable(baseMin * 60, lv, finalDailyExp);
+            if (shouldScroll) {
+                const targetRow = document.getElementById(`row-lv-${lv}`);
+                if (targetRow) targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            autoSave();
+        };
+
+        const renderTable = (hourly, currentLv, dayExp) => {
+            const tbody = document.getElementById('mastery-table-body');
+            let cumulative = 0;
+            let rows = "";
+            for (let i = 1; i <= 120; i++) {
+                const nextExp = getExp(i);
+                const hPct = hourly > 0 ? (hourly / nextExp) * 100 : 0;
+                const daysNeeded = dayExp > 0 ? (nextExp / dayExp) : 0;
+                const isCur = i === currentLv;
+                
+                rows += `
+                    <tr id="row-lv-${i}" class="${isCur ? 'row-highlight' : ''} hover:bg-slate-800/20 text-xs font-mono transition-colors">
+                        <td class="p-4 font-bold ${isCur ? 'text-white' : 'text-gold'}">LV.${i}</td>
+                        <td class="p-4 text-slate-400 text-right">${formatNum(nextExp)}</td>
+                        <td class="p-4 text-blue-400 font-bold text-center">${nextExp > 0 ? hPct.toFixed(3) + "%" : "-"}</td>
+                        <td class="p-4 text-green-400 font-bold text-center">${daysNeeded > 0 ? daysNeeded.toFixed(2) + "日" : "-"}</td>
+                        <td class="p-4 text-slate-600 text-right text-[10px]">${formatNum(cumulative)}</td>
+                    </tr>
+                `;
+                cumulative += nextExp;
+            }
+            tbody.innerHTML = rows;
+        };
+
+        window.calculateCrafting = () => {
+            const th = parseInt(document.getElementById('craft-target-high').value) || 0;
+            const tn = parseInt(document.getElementById('craft-target-normal').value) || 0;
+            const is = parseInt(document.getElementById('inv-shards').value) || 0;
+            const io = parseInt(document.getElementById('inv-ore').value) || 0;
+            const ic = parseInt(document.getElementById('inv-ore-cond').value) || 0;
+
+            const rShards = (th * 1500) + (tn * 300);
+            const rOre = (th * 200) + (tn * 20);
+            const totalOre = io + (ic * 20);
+
+            const items = [
+                { name: "時の欠片", req: rShards, have: is },
+                { name: "黒オール (換算)", req: rOre, have: totalOre }
+            ];
+
+            document.getElementById('craft-results').innerHTML = items.map(item => {
+                const diff = Math.max(0, item.req - item.have);
+                return `
+                    <div class="glass-card p-4 flex justify-between items-center border ${diff > 0 ? 'border-red-900/30' : 'border-green-900/30'}">
+                        <div>
+                            <span class="text-[9px] text-slate-500 block font-bold mb-1 uppercase tracking-widest">${item.name}</span>
+                            <span class="text-sm font-mono">合計必要: ${formatNum(item.req)}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xl font-mono font-bold ${diff > 0 ? 'text-red-400' : 'text-green-500'}">
+                                ${diff > 0 ? '-' + formatNum(diff) : 'READY'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            autoSave();
+        };
+
+        // Storage
+        const autoSave = async () => {
+            if (!currentUserId || !db || isSaving) return;
+            isSaving = true;
+            document.getElementById('cloud-spinner').classList.remove('hidden');
+            document.getElementById('sync-text').innerText = "同期中...";
+
+            const data = {
+                lv: parseInt(document.getElementById('input-lv').value),
+                pct: parseFloat(document.getElementById('input-percent').value),
+                minutely: parseFloat(document.getElementById('input-minexp').value),
+                sims: simulators,
+                craft: {
+                    th: parseInt(document.getElementById('craft-target-high').value),
+                    tn: parseInt(document.getElementById('craft-target-normal').value),
+                    is: parseInt(document.getElementById('inv-shards').value),
+                    io: parseInt(document.getElementById('inv-ore').value),
+                    ic: parseInt(document.getElementById('inv-ore-cond').value)
+                },
+                updatedAt: Date.now()
+            };
+
+            try {
+                // Rule 1: Path structure
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'data', 'current');
+                await setDoc(userRef, data);
+            } catch (e) {
+                console.error("Save error:", e);
+            } finally {
+                setTimeout(() => {
+                    document.getElementById('cloud-spinner').classList.add('hidden');
+                    document.getElementById('sync-text').innerText = "クラウド同期済";
+                    isSaving = false;
+                }, 800);
+            }
+        };
+
+        const loadData = async (uid) => {
+            if (!db) return;
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'users', uid, 'data', 'current');
+                const snap = await getDoc(userRef);
+                if (snap.exists()) {
+                    const d = snap.data();
+                    document.getElementById('input-lv').value = d.lv || 50;
+                    document.getElementById('input-percent').value = d.pct || 0;
+                    document.getElementById('input-minexp').value = d.minutely || 1000000;
+                    simulators = d.sims || [];
+                    if (d.craft) {
+                        document.getElementById('craft-target-high').value = d.craft.th || 0;
+                        document.getElementById('craft-target-normal').value = d.craft.tn || 0;
+                        document.getElementById('inv-shards').value = d.craft.is || 0;
+                        document.getElementById('inv-ore').value = d.craft.io || 0;
+                        document.getElementById('inv-ore-cond').value = d.craft.ic || 0;
+                    }
+                    renderSimulators();
+                }
+            } catch (e) {
+                console.error("Load error:", e);
+            } finally {
+                calculateMastery(true);
+                calculateCrafting();
+            }
+        };
+
+        window.switchTab = (tab) => {
+            document.getElementById('section-mastery').classList.toggle('hidden', tab !== 'mastery');
+            document.getElementById('section-crafting').classList.toggle('hidden', tab !== 'crafting');
+            document.getElementById('tab-mastery').classList.toggle('tab-active', tab === 'mastery');
+            document.getElementById('tab-crafting').classList.toggle('tab-active', tab === 'crafting');
+        };
+
+        window.resetMastery = () => {
+            if(confirm("データをリセットしてLV1に戻しますか？")) {
+                document.getElementById('input-lv').value = 1;
+                document.getElementById('input-percent').value = 0;
+                document.getElementById('input-minexp').value = 0;
+                simulators = [];
+                renderSimulators();
+                calculateMastery(true);
+            }
+        };
+
+        // Event Setup
+        const bindInputs = () => {
+            const inputs = ['input-lv', 'input-percent', 'input-minexp', 'craft-target-high', 'craft-target-normal', 'inv-shards', 'inv-ore', 'inv-ore-cond'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', () => {
+                    if (id.startsWith('craft') || id.startsWith('inv')) calculateCrafting();
+                    else calculateMastery(id === 'input-lv');
+                });
+            });
+        };
+
+        // Entry
+        initFirebase();
+        bindInputs();
+        
+    </script>
+</body>
+</html>
