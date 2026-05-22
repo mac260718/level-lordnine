@@ -3,248 +3,544 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LORD NINE マスタリー・製作・隠し職業 総合管理ツール</title>
+    <title>LORD NINE マスタリー・製作・隠し職業 総合管理ツール PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght=300;400;700&family=JetBrains+Mono:wght=400;700&display=swap');
-        :root {
-            --gold-primary: #c5a059;
-            --bg-dark: #0f1115;
-            --card-bg: rgba(30, 41, 59, 0.7);
-        }
-        body { font-family: 'Noto Sans JP', sans-serif; background-color: var(--bg-dark); color: #e2e8f0; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .glass-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 1rem; }
-        .accent-gold { color: var(--gold-primary); }
-        .tab-active { border-bottom: 3px solid var(--gold-primary); color: var(--gold-primary); }
-        .input-gold { background: rgba(15, 17, 21, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.2s; }
-        .input-gold:focus { border-color: var(--gold-primary); outline: none; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        .row-highlight { background-color: rgba(197, 160, 89, 0.15) !important; border-left: 4px solid var(--gold-primary); }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;750;900&family=JetBrains+Mono:wght@400;700&display=swap');
         
-        /* 隠し職業バッジアニメーション用 */
+        :root {
+            --gold: #c5a059;
+            --gold-light: #e5c17b;
+            --gold-dark: #967438;
+            --bg-dark: #07080b;
+            --card-bg: rgba(13, 17, 28, 0.75);
+            --card-border: rgba(197, 160, 89, 0.2);
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(197, 160, 89, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 0% 100%, rgba(30, 41, 59, 0.3) 0%, transparent 50%),
+                linear-gradient(to bottom, #07080b, #0c0e14);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* 特製グラスカード */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(197, 160, 89, 0.35);
+        }
+
+        /* テキスト＆背景ゴールド */
+        .text-gold { color: var(--gold); }
+        .text-gold-gradient {
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gold { background-color: var(--gold); }
+        .border-gold { border-color: var(--gold); }
+        
+        /* アクティブタブ */
+        .tab-active {
+            border-bottom: 3px solid var(--gold);
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
+        }
+
+        /* フォーム入力 */
+        .input-gold {
+            background: rgba(5, 7, 12, 0.95);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            color: #fff;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-gold:focus {
+            border-color: var(--gold);
+            outline: none;
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.25);
+            background: rgba(10, 14, 24, 0.98);
+        }
+
+        /* テーブル現在レベル強調 */
+        .row-highlight {
+            background: linear-gradient(90deg, rgba(197, 160, 89, 0.15) 0%, rgba(197, 160, 89, 0.03) 100%) !important;
+            border-left: 4px solid var(--gold);
+        }
+        /* 目標レベル強調 */
+        .row-target-highlight {
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.03) 100%) !important;
+            border-left: 4px solid #22c55e;
+        }
+
+        /* スクロールバー */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        ::-webkit-scrollbar-thumb { background: #1e2433; border-radius: 10px; border: 1px solid rgba(197,160,89,0.1); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-dark); }
+
+        /* 発光バッジ */
         .badge-glow {
-            box-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.35);
             animation: pulseGlow 2s infinite;
         }
         @keyframes pulseGlow {
-            0% { box-shadow: 0 0 5px rgba(197, 160, 89, 0.2); }
-            50% { box-shadow: 0 0 12px rgba(197, 160, 89, 0.5); }
-            100% { box-shadow: 0 0 5px rgba(197, 160, 89, 0.2); }
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.02); opacity: 1; box-shadow: 0 0 25px rgba(197, 160, 89, 0.6); }
         }
     </style>
 </head>
-<body class="p-4 md:p-6 lg:p-10">
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-10 text-center relative">
-            <h1 class="text-4xl md:text-5xl font-bold accent-gold mb-2 tracking-widest uppercase italic">Lord Nine</h1>
-            <p class="text-slate-400 text-sm mt-4 tracking-widest">MASTER & CRAFT & HIDDEN JOBS UTILITY (LOCAL STORAGE MODE)</p>
-            <div id="save-indicator" class="absolute top-0 right-0 text-[10px] text-green-500 bg-green-900/20 px-3 py-1.5 rounded-full border border-green-800 opacity-0 transition-opacity duration-300">
-                <i class="fa-solid fa-check"></i> 保存済
+<body class="p-4 md:p-6 lg:p-10 min-h-screen flex flex-col justify-between">
+    <div class="max-w-7xl mx-auto w-full flex-grow">
+        
+        <!-- HEADER -->
+        <header class="mb-8 text-center relative">
+            <div class="inline-block relative">
+                <h1 class="text-4.5xl md:text-5xl font-extrabold text-gold-gradient tracking-widest uppercase italic font-black drop-shadow-lg">
+                    Lord Nine
+                </h1>
+                <span class="absolute -bottom-1 right-0 text-[9px] text-gold/60 tracking-widest uppercase font-bold">Comprehensive Dashboard</span>
+            </div>
+            <p class="text-slate-400 text-xs mt-3 tracking-widest font-light">OFFLINE CORE UTILITY <span class="text-gold font-bold">v4.0 PRO</span></p>
+            
+            <!-- 保存インジケータ -->
+            <div id="save-indicator" class="absolute top-0 right-0 text-[10px] text-green-400 bg-green-950/40 px-3 py-1.5 rounded-full border border-green-800 opacity-0 transition-all duration-300 transform translate-y-2 pointer-events-none">
+                <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 自動保存完了
             </div>
         </header>
 
-        <!-- タブ切り替え -->
-        <div class="flex justify-center space-x-6 md:space-x-12 mb-8 border-b border-slate-800 text-sm md:text-base">
-            <button onclick="switchTab('mastery')" id="tab-mastery" class="pb-3 px-3 md:px-6 tab-active font-bold flex items-center gap-2">
-                <i class="fa-solid fa-scroll text-[12px]"></i>マスタリー
+        <!-- MAIN TABS (経験値・製作・職業に完全統一) -->
+        <div class="flex justify-center space-x-2 md:space-x-8 mb-8 border-b border-slate-800 text-xs md:text-base">
+            <button onclick="switchTab('mastery')" id="tab-mastery" class="pb-3 px-3 md:px-6 tab-active font-bold transition-all flex items-center gap-2">
+                <i class="fa-solid fa-scroll text-[11px]"></i>経験値
             </button>
-            <button onclick="switchTab('crafting')" id="tab-crafting" class="pb-3 px-3 md:px-6 text-slate-500 font-bold flex items-center gap-2">
-                <i class="fa-solid fa-hammer text-[12px]"></i>製作シミュ
+            <button onclick="switchTab('crafting')" id="tab-crafting" class="pb-3 px-3 md:px-6 text-slate-500 font-bold transition-all flex items-center gap-2">
+                <i class="fa-solid fa-hammer text-[11px]"></i>製作
             </button>
-            <button onclick="switchTab('hidden-job')" id="tab-hidden-job" class="pb-3 px-3 md:px-6 text-slate-500 font-bold flex items-center gap-2">
-                <i class="fa-solid fa-shield-halved text-[12px]"></i>隠し職業
+            <button onclick="switchTab('hidden-job')" id="tab-hidden-job" class="pb-3 px-3 md:px-6 text-slate-500 font-bold transition-all flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-[11px]"></i>職業
             </button>
         </div>
 
-        <!-- マスタリーセクション -->
+        <!-- ==============================================
+             SECTION 1: MASTERY (経験値)
+             ============================================== -->
         <div id="section-mastery" class="space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="glass-card p-6 space-y-6 border-t-4 border-gold">
-                    <h3 class="text-lg font-bold">ステータス入力</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">現在のレベル</label>
-                            <input type="number" id="input-lv" value="50" min="1" max="120" class="w-full input-gold rounded-xl py-3 px-4 text-xl font-bold text-white">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Inputs Side (Col 5) -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="glass-card p-6 space-y-6 border-t-4 border-gold">
+                        <h3 class="font-bold flex items-center gap-2 text-slate-200 border-b border-slate-800 pb-3">
+                            <i class="fa-solid fa-sliders text-gold"></i> マスタリーステータス設定
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5 font-medium">現在のレベル (Lv)</label>
+                                <input type="number" id="input-lv" value="50" min="1" max="119" class="w-full input-gold rounded-xl py-2.5 px-4 text-xl font-bold font-mono text-center">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5 font-medium">目標のレベル (Lv)</label>
+                                <input type="number" id="input-target-lv" value="60" min="2" max="120" class="w-full input-gold rounded-xl py-2.5 px-4 text-xl font-bold font-mono text-center text-green-400 border-green-900/30">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">進行度 (%)</label>
-                            <input type="number" id="input-percent" value="0" step="0.01" min="0" max="99.99" class="w-full input-gold rounded-xl py-3 px-4 text-lg text-white font-mono">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5 font-medium">現在LVの経験値割合 (%)</label>
+                                <div class="relative">
+                                    <input type="number" id="input-percent" value="0" step="0.01" min="0" max="99.99" class="w-full input-gold rounded-xl py-2.5 pl-4 pr-8 text-md font-mono">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-mono">%</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5 font-medium">ベース基本分給 (Exp/分)</label>
+                                <input type="number" id="input-minexp" value="1000000" min="0" class="w-full input-gold rounded-xl py-2.5 px-4 text-md font-mono text-right">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">現在の分給 (Exp/分)</label>
-                            <input type="number" id="input-minexp" value="1000000" class="w-full input-gold rounded-xl py-3 px-4 text-lg font-mono text-white">
+
+                        <!-- 簡易メモ・説明 -->
+                        <div class="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl text-[11px] text-amber-400/90 leading-relaxed">
+                            <p class="font-bold flex items-center gap-1 mb-1 text-amber-500">
+                                <i class="fa-solid fa-circle-info"></i> 目標レベルシミュレーション搭載
+                            </p>
+                            設定した目標レベルまでの累積必要経験値を算出し、24時間スケジュールから割り出された実効日給をベースに、到達に必要な総日数と予定日を自動計算します。
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="triggerConfirm('データの初期化', 'すべてのマスタリー・スケジュールおよび製作、選択アビリティデータを消去して初期状態に戻しますか？', resetData)" class="flex-1 py-2.5 rounded-xl text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors border border-slate-800">
+                                全データを初期化
+                            </button>
+                            <button onclick="toggleBackupCard()" class="px-4 py-2.5 rounded-xl text-xs text-slate-400 hover:text-gold border border-slate-800 transition-colors">
+                                <i class="fa-solid fa-file-export mr-1"></i> バックアップ
+                            </button>
                         </div>
                     </div>
 
-                    <!-- ローカル保存に関する注意書き (マスタリー用) -->
-                    <div class="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl text-[10px] text-amber-400/90 leading-relaxed">
-                        <p class="font-bold flex items-center gap-1 mb-1 text-amber-500">
-                            <i class="fa-solid fa-triangle-exclamation"></i> ローカル保存の注意事項
+                    <!-- バックアップパネル (初期非表示) -->
+                    <div id="backup-card" class="hidden glass-card p-6 border border-gold/40 space-y-4 fade-in">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-xs font-bold text-gold flex items-center gap-2">
+                                <i class="fa-solid fa-share-nodes"></i> インポート / エクスポート
+                            </h4>
+                            <button onclick="toggleBackupCard()" class="text-slate-500 hover:text-slate-200">×</button>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            下記のコードをテキストとして保存するか、他ブラウザで読み込ませることで設定を同期できます。
                         </p>
-                        入力したステータスはご使用中のブラウザ（ローカル）に自動保存されます。シークレットモードでの起動やブラウザの履歴・キャッシュ消去を行うと、データがすべて消失しますのでご注意ください。
+                        <textarea id="backup-string" class="w-full h-24 bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[11px] text-slate-300 focus:outline-none focus:border-gold"></textarea>
+                        <div class="flex justify-end gap-2">
+                            <button onclick="copyBackupString()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-4 py-2 rounded-xl transition-colors">
+                                コピー
+                            </button>
+                            <button onclick="importBackupString()" class="bg-gold hover:bg-gold-dark text-[#0f1115] font-bold text-xs px-4 py-2 rounded-xl transition-colors">
+                                インポート
+                            </button>
+                        </div>
                     </div>
-
-                    <button onclick="resetData()" class="w-full py-2 text-[10px] text-slate-500 hover:text-red-400 transition-colors">全データをリセット</button>
                 </div>
 
-                <div class="lg:col-span-2 space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="glass-card p-6">
-                            <span class="text-[10px] text-slate-400 uppercase font-bold">1日の獲得予測</span>
-                            <div class="text-3xl font-bold accent-gold my-2 font-mono" id="res-daily-exp">--</div>
-                            <div class="text-[11px] text-slate-500" id="res-daily-pct">-- % 増/日</div>
+                <!-- Dashboards & Schedules (Col 7) -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- 総合結果ダッシュボード -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="glass-card p-4 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider block mb-1">実効合計日給 (24h)</span>
+                                <div id="res-daily-exp" class="text-2xl font-black text-gold font-mono">--</div>
+                            </div>
+                            <div id="res-daily-pct" class="text-[10px] text-slate-500 font-mono mt-2">-- % /日</div>
                         </div>
-                        <div class="glass-card p-6 border-l-4 border-green-500">
-                            <span class="text-[10px] text-slate-400 uppercase font-bold">レベルアップまで</span>
-                            <div class="text-2xl font-bold text-green-400 my-2" id="res-time-left">--</div>
-                            <div class="text-[11px] text-slate-500" id="res-exp-left">残り -- Exp</div>
+                        
+                        <div class="glass-card p-4 flex flex-col justify-between border-l-4 border-amber-500">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider block mb-1">次レベル昇級まで</span>
+                                <div id="res-time-left" class="text-xl font-bold text-amber-400">--</div>
+                            </div>
+                            <div id="res-exp-left" class="text-[10px] text-slate-500 font-mono mt-2">残り -- Exp</div>
+                        </div>
+
+                        <div class="glass-card p-4 flex flex-col justify-between border-l-4 border-green-500">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider block mb-1">目標レベル到達まで</span>
+                                <div id="res-target-time-left" class="text-xl font-bold text-green-400">--</div>
+                            </div>
+                            <div id="res-target-date" class="text-[10px] text-slate-500 font-mono mt-2">達成予想: --</div>
                         </div>
                     </div>
-                    
-                    <div class="glass-card p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xs font-bold uppercase tracking-widest"><i class="fa-solid fa-clock mr-2"></i>スケジュール</h3>
-                            <button onclick="addSimulator()" class="bg-gold/10 hover:bg-gold/20 text-gold text-[10px] px-3 py-1.5 rounded-lg border border-gold/20 font-bold">+ 追加</button>
+
+                    <!-- スケジュール設定 -->
+                    <div class="glass-card p-6 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-850 pb-3">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-slate-200">
+                                    <i class="fa-solid fa-clock text-gold"></i> 24時間スケジュール・シミュレータ
+                                </h3>
+                                <p class="text-[10px] text-slate-500 mt-1">
+                                    各狩場・コンテンツの滞在時間ごとの分給を設定できます。
+                                </p>
+                            </div>
+                            <button onclick="addSimulator()" class="bg-gold/10 hover:bg-gold/20 text-gold text-xs px-3 py-1.5 rounded-lg border border-gold/20 font-bold transition-all">
+                                <i class="fa-solid fa-plus mr-1"></i> 狩場追加
+                            </button>
                         </div>
-                        <div id="simulators-container" class="space-y-3"></div>
+                        
+                        <div id="simulators-container" class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1"></div>
+                        
+                        <div id="sim-warning" class="hidden p-2.5 bg-red-950/40 border border-red-900/50 rounded-xl text-[10px] text-red-400 text-center font-mono">
+                            ⚠️ 合計設定時間が24時間を超過しています（現在: <span id="total-hours-badge" class="font-bold"></span> 時間）
+                        </div>
+                        <div class="text-[10px] text-slate-500 text-right">
+                            ※24時間に満たない未設定時間は、左記「ベース基本分給」として自動補完計算されます。
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- テーブル -->
+            <!-- Mastery Complete Database Table -->
             <div class="glass-card overflow-hidden">
-                <div class="max-h-[400px] overflow-y-auto relative" id="mastery-table-container">
+                <div class="p-4 border-b border-slate-800 bg-slate-900/40 flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <h3 class="font-bold text-xs text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol text-gold"></i> 経験値マスタ & 昇級必要日数一覧 (Lv.1 - 120)
+                    </h3>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button onclick="toggleTableDisplayMode()" id="btn-table-mode" class="text-xs bg-gold/10 hover:bg-gold/20 text-gold border border-gold/30 px-3 py-1.5 rounded-xl transition-all font-medium flex items-center gap-1.5">
+                            <i class="fa-solid fa-compress"></i> 簡易表示中 (前後10Lv)
+                        </button>
+                        <span class="text-[10px] flex items-center gap-1.5 text-slate-500">
+                            <span class="inline-block w-2.5 h-2.5 bg-gold/20 border-l-2 border-gold"></span> 現在地
+                            <span class="inline-block w-2.5 h-2.5 bg-green-500/20 border-l-2 border-green-500 ml-1"></span> 目標地
+                        </span>
+                        <button onclick="scrollToCurrentLevel()" class="text-xs text-gold hover:text-gold-light transition-colors font-medium underline">
+                            現在地へスクロール
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto relative w-full" id="mastery-table-container">
                     <table class="w-full text-left text-sm">
-                        <thead class="sticky top-0 bg-slate-800 text-slate-500 text-[9px] uppercase font-bold border-b border-slate-700">
+                        <thead class="bg-slate-950 text-slate-500 text-[10px] uppercase font-bold border-b border-slate-800">
                             <tr>
                                 <th class="p-4">Level</th>
-                                <th class="p-4 text-right">必要Exp</th>
-                                <th class="p-4 text-center">所要日数</th>
-                                <th class="p-4 text-right">累計Exp</th>
+                                <th class="p-4 text-right">必要経験値 (Next)</th>
+                                <th class="p-4 text-center">進行時給比</th>
+                                <th class="p-4 text-center">昇級所要日数 (24h稼働換算)</th>
+                                <th class="p-4 text-right">1からの累積経験値</th>
                             </tr>
                         </thead>
-                        <tbody id="mastery-table-body" class="divide-y divide-slate-800/50"></tbody>
+                        <tbody id="mastery-table-body" class="divide-y divide-slate-800/40 font-mono"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- 製作セクション -->
+        <!-- ==============================================
+             SECTION 2: CRAFTING (製作)
+             ============================================== -->
         <div id="section-crafting" class="hidden space-y-6">
-            <div class="glass-card p-8 border-t-4 border-green-600">
-                <h3 class="text-xl font-bold mb-8">製作シミュレーター</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div class="space-y-6">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                                <label class="block text-[10px] text-slate-500 mb-2 font-bold text-center">燦爛な生命の核</label>
-                                <input type="number" id="craft-target-high" value="0" class="w-full bg-transparent text-center text-3xl font-bold text-green-400 focus:outline-none">
-                            </div>
-                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                                <label class="block text-[10px] text-slate-500 mb-2 font-bold text-center">生命の核</label>
-                                <input type="number" id="craft-target-normal" value="0" class="w-full bg-transparent text-center text-3xl font-bold text-slate-300 focus:outline-none">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="number" id="inv-shards" value="0" placeholder="時の欠片" class="input-gold rounded-lg p-2 text-center text-sm">
-                            <input type="number" id="inv-ore" value="0" placeholder="黒オール" class="input-gold rounded-lg p-2 text-center text-sm">
-                            <input type="number" id="inv-ore-cond" value="0" placeholder="凝縮(上位)" class="input-gold border-green-900/50 rounded-lg p-2 text-center text-sm text-green-400">
-                        </div>
-
-                        <!-- ローカル保存に関する注意書き (製作シミュ用) -->
-                        <div class="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl text-[10px] text-amber-400/90 leading-relaxed">
-                            <p class="font-bold flex items-center gap-1 mb-1 text-amber-500">
-                                <i class="fa-solid fa-triangle-exclamation"></i> ローカル保存の注意事項
-                            </p>
-                            目標値やインベントリの在庫データはブラウザ固有のストレージに保存されます。他端末（PCからスマホなど）へデータを引き継ぐことはできません。他デバイスで利用したい場合は、お手数ですが再度数値をご入力ください。
+            <div class="glass-card p-6 md:p-8 border-t-4 border-green-600">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+                    <div class="flex items-center gap-3">
+                        <span class="w-2.5 h-8 bg-green-600 rounded-full"></span>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-100" id="craft-title">製作素材シミュレーター (生命の核)</h3>
+                            <p class="text-xs text-slate-500 mt-0.5" id="craft-subtitle">乗り物・装備の製作に必要な「時の欠片」「黒オール」「錬金術触媒」の必要数を算出します。</p>
                         </div>
                     </div>
-                    <div id="craft-results" class="space-y-4"></div>
+                    
+                    <!-- レシピプリセットから「レシピリスト」に変更、将来のレシピ追加に完全対応 -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-slate-400 font-bold whitespace-nowrap"><i class="fa-solid fa-list mr-1"></i> レシピリスト:</label>
+                        <select id="craft-recipe-select" onchange="switchCraftRecipe()" class="bg-slate-900 border border-slate-700 rounded-lg py-1.5 px-3 text-xs text-slate-200 outline-none focus:border-green-500">
+                            <option value="life-core">生命の核 (乗り物)</option>
+                            <option value="future-recipe">【予告】その他追加予定のレシピ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 1. 生命の核 製作コンテナ -->
+                <div id="recipe-view-life-core" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- 入力サイド (Col 5) - STEP 1 & 2 -->
+                    <div class="lg:col-span-5 space-y-6">
+                        
+                        <!-- STEP 1: 目標個数の入力 -->
+                        <div class="bg-slate-950/30 p-5 rounded-2xl border border-slate-850/80 space-y-4">
+                            <h4 class="text-xs font-black text-green-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full bg-green-500/20 text-green-400 text-[10px] font-mono font-bold">1</span>
+                                【STEP 1】 製作したい目標個数を入力
+                            </h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-850 text-center">
+                                    <label class="text-[10px] text-green-400 font-bold block mb-2 uppercase">燦爛な生命の核 (上位)</label>
+                                    <input type="number" id="craft-target-high" value="7" min="0" class="w-full bg-transparent text-3xl font-black text-green-400 focus:outline-none text-center font-mono">
+                                </div>
+                                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-850 text-center">
+                                    <label class="text-[10px] text-slate-400 font-bold block mb-2 uppercase">生命の核 (通常)</label>
+                                    <input type="number" id="craft-target-normal" value="0" min="0" class="w-full bg-transparent text-3xl font-black text-slate-200 focus:outline-none text-center font-mono">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 2: 現在の所持数の入力 -->
+                        <div class="bg-slate-950/30 p-5 rounded-2xl border border-slate-850/80 space-y-4">
+                            <h4 class="text-xs font-black text-gold uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full bg-gold/20 text-gold text-[10px] font-mono font-bold">2</span>
+                                【STEP 2】 現在の所持数を入力
+                            </h4>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-[10px] text-slate-450 uppercase font-bold pl-1 block mb-1">時の欠片</label>
+                                    <input type="number" id="inv-shards" value="0" min="0" class="w-full input-gold rounded-lg p-2 px-3 font-mono text-xs">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-[10px] text-slate-450 uppercase font-bold pl-1 block mb-1">黒オール</label>
+                                        <input type="number" id="inv-ore" value="1492" min="0" class="w-full input-gold rounded-lg p-2 px-3 font-mono text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-green-400 uppercase font-bold pl-1 block mb-1">凝縮された黒オール</label>
+                                        <input type="number" id="inv-ore-cond" value="35" min="0" class="w-full input-gold border-green-950/50 rounded-lg p-2 px-3 font-mono text-xs text-green-400">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-[10px] text-slate-450 uppercase font-bold pl-1 block mb-1">錬金術触媒</label>
+                                        <input type="number" id="inv-catalyst" value="0" min="0" class="w-full input-gold rounded-lg p-2 px-3 font-mono text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-green-400 uppercase font-bold pl-1 block mb-1">錬金術促進剤</label>
+                                        <input type="number" id="inv-catalyst-cond" value="8" min="0" class="w-full input-gold border-green-950/50 rounded-lg p-2 px-3 font-mono text-xs text-green-400">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 換算ルールの補足メモ -->
+                        <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl text-[11px] text-slate-400 leading-relaxed space-y-1.5">
+                            <p class="font-bold text-slate-300 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-info text-green-500"></i> 換算計算ルール
+                            </p>
+                            <p class="pl-1">・凝縮された黒オール 1個 ＝ 黒オール 20個として計算</p>
+                            <p class="pl-1">・錬金術促進剤 1個 ＝ 錬金術触媒 20個として計算</p>
+                            <p class="pl-1">・目標数に対して、すでに所持している上記の上位素材も自動で差し引かれて不足分が算出されます。</p>
+                        </div>
+                    </div>
+
+                    <!-- 結果サイド (Col 7) - STEP 3: 必要な合計素材と不足分 -->
+                    <div class="lg:col-span-7 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-xs font-black mb-4 text-green-450 uppercase tracking-widest flex items-center gap-2">
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full bg-green-500/20 text-green-400 text-[10px] font-mono font-bold">3</span>
+                                【STEP 3】 必要な合計素材と不足分
+                            </h4>
+                            <div id="craft-results" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 将来追加される新規レシピ用ビュープレースホルダー -->
+                <div id="recipe-view-future" class="hidden p-12 text-center text-slate-500 border border-dashed border-slate-800 rounded-3xl">
+                    <i class="fa-solid fa-screwdriver-wrench text-5xl text-slate-750 mb-4 block"></i>
+                    <p class="text-sm font-bold text-slate-350">今後、様々な製作レシピ（装備・素材等）を追加予定です。</p>
+                    <p class="text-xs text-slate-550 mt-1.5">追加したい装備レシピ等のご要望がございましたらお知らせください。</p>
                 </div>
             </div>
         </div>
 
-        <!-- 隠し職業セクション -->
+        <!-- ==============================================
+             SECTION 3: HIDDEN JOBS & ABILITIES (職業)
+             ============================================== -->
         <div id="section-hidden-job" class="hidden space-y-6">
+            
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
-                <!-- 左コラム：職業切り替えボタン群 -->
-                <div class="lg:col-span-4 space-y-6">
+                <!-- 隠し職業一覧 (Col 5) -->
+                <div class="lg:col-span-5 space-y-6">
                     <div class="glass-card p-5 border-t-4 border-gold space-y-3">
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">隠し職業一覧</label>
-                        <div id="job-buttons-container" class="grid grid-cols-2 gap-2">
-                            <!-- JSで生成 -->
+                        <div class="flex justify-between items-center border-b border-slate-850 pb-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">隠し職業適合率</label>
+                            <span class="text-[10px] text-slate-500">アビリティ解放で適合</span>
                         </div>
-                    </div>
-
-                    <!-- 攻略ヒント -->
-                    <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-2xl flex gap-3 text-xs text-slate-400 leading-relaxed shadow-sm">
-                        <i class="fa-solid fa-circle-info text-amber-500 text-base mt-0.5"></i>
-                        <div>
-                            <strong class="text-slate-200">解放ルール：</strong><br>
-                            各職業に設定されている「解放アビリティ・ペア（3ペア・合計6個）」のアビリティをすべて有効にすることで、隠し職業が完全に解放されます。
-                        </div>
-                    </div>
-
-                    <!-- ローカル保存に関する注意書き (隠し職業用) -->
-                    <div class="p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex gap-3 text-xs text-amber-400/90 leading-relaxed shadow-sm">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-500 text-base mt-0.5"></i>
-                        <div>
-                            <strong class="text-amber-500">ローカル保存の注意事項：</strong><br>
-                            選択したアビリティのチェック状況、および現在選択している職業パネルはすべて自動保存されます。ブラウザのセキュリティ設定等でクッキーやサイトデータが定期削除される設定になっている場合、データがリセットされます。
-                        </div>
+                        <div id="job-buttons-container" class="grid grid-cols-1 gap-2.5"></div>
                     </div>
                 </div>
 
-                <!-- 右コラム：選択した職業の詳細 -->
-                <div class="lg:col-span-8">
-                    <div id="job-detail-card" class="glass-card p-6 space-y-5">
-                        <!-- JSで動的に表示 -->
-                    </div>
+                <!-- 選択職業の詳細 & 必須アビリティ (Col 7) -->
+                <div class="lg:col-span-7">
+                    <div id="job-detail-card" class="glass-card p-6 space-y-5 min-h-[350px]"></div>
                 </div>
             </div>
 
-            <!-- 下部：所持アビリティ選択 -->
+            <!-- アビリティ構成盤 (マトリクス) -->
             <div class="glass-card p-6 space-y-6 border-b-4 border-slate-800">
-                <div class="border-b border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="border-b border-slate-800 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold flex items-center gap-2 text-slate-200">
-                            <i class="fa-solid fa-cubes text-amber-500"></i>
-                            所持アビリティの選択（系統別リスト）
+                            <i class="fa-solid fa-tags text-gold"></i> アビリティ構成盤
                         </h2>
-                        <p class="text-xs text-slate-450 mt-1">
-                            習得しているアビリティを選択してください。適合状況がリアルタイムで計算・保存されます。
+                        <p class="text-xs text-slate-400 mt-1">
+                            現在習得しているアビリティをオンにすると、上記の隠し職業マッチング率に瞬時に反映・自動保存されます。
                         </p>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span id="selected-abilities-badge" class="text-xs font-bold text-amber-400 bg-amber-950/40 border border-amber-500/20 px-3 py-1.5 rounded-xl font-mono">
-                            選択中: 0 / 64 個
+                    
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- ビルド保存スロット -->
+                        <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 gap-1">
+                            <span class="text-[10px] text-slate-500 px-2">ビルド:</span>
+                            <button onclick="saveActiveBuild(1)" class="text-[10px] bg-slate-950 hover:bg-gold/10 text-slate-400 hover:text-gold px-2.5 py-1 rounded transition-colors font-mono">1</button>
+                            <button onclick="saveActiveBuild(2)" class="text-[10px] bg-slate-950 hover:bg-gold/10 text-slate-400 hover:text-gold px-2.5 py-1 rounded transition-colors font-mono">2</button>
+                            <button onclick="saveActiveBuild(3)" class="text-[10px] bg-slate-950 hover:bg-gold/10 text-slate-400 hover:text-gold px-2.5 py-1 rounded transition-colors font-mono">3</button>
+                            <span class="text-slate-700">|</span>
+                            <select id="load-build-select" onchange="loadSavedBuild(this.value)" class="bg-transparent text-[10px] text-gold outline-none pr-1 cursor-pointer">
+                                <option value="">読込...</option>
+                                <option value="1">ビルド 1</option>
+                                <option value="2">ビルド 2</option>
+                                <option value="3">ビルド 3</option>
+                            </select>
+                        </div>
+
+                        <span id="selected-count" class="text-xs font-bold text-gold bg-gold/10 px-3.5 py-2 border border-gold/20 rounded-xl font-mono">
+                            選択中: 0
                         </span>
-                        <button onclick="clearSelectedAbilities()" class="px-3 py-1.5 rounded-xl text-xs font-bold border border-red-950 bg-red-950/20 hover:bg-red-950/40 text-red-400 transition-all">
-                            選択リセット
+                        
+                        <button onclick="triggerConfirm('全解除', '現在選択しているすべてのアビリティを解除しますか？', clearSelectedAbilities)" class="px-3 py-1.5 rounded-xl text-xs font-bold border border-red-950 bg-red-950/20 text-red-400 hover:bg-red-950/40 transition-colors">
+                            全解除
                         </button>
                     </div>
                 </div>
 
-                <!-- 系統別アビリティ表示エリア -->
-                <div id="abilities-categories-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <!-- JSで系統ごとにアコーディオン形式を生成 -->
+                <!-- フィルター＆検索バー -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="ability-search" oninput="filterAbilities()" placeholder="アビリティ名で検索..." class="w-full bg-slate-950/85 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-xs text-slate-200 outline-none focus:border-gold">
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleAllCategories(true)" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-3 py-2 rounded-xl border border-slate-800">すべて開く</button>
+                        <button onclick="toggleAllCategories(false)" class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-[10px] px-3 py-2 rounded-xl border border-slate-800">すべて畳む</button>
+                    </div>
                 </div>
+
+                <!-- アビリティカテゴリグリッド -->
+                <div id="abilities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
             </div>
         </div>
 
-        <footer class="mt-16 pb-12 text-center text-slate-600 text-[10px] tracking-widest uppercase">
-            &copy; 2026 LORD NINE COMPREHENSIVE UTILITY | VERSION 3.2 (FULL OFFLINE LOCAL STORAGE MODE)
+        <!-- FOOTER -->
+        <footer class="mt-16 pb-12 text-center text-slate-650 text-[10px] tracking-widest leading-relaxed">
+            &copy; 2026 LORD NINE COMPREHENSIVE UTILITY | VERSION 4.0 (STANDALONE PRO)
+            <br><span class="text-slate-500 mt-1 block">ローカルブラウザ内の暗号化領域（LocalStorage）にデータを保存します。外部通信は行いません。</span>
         </footer>
     </div>
 
-    <!-- 統合JSコード -->
+    <!-- CUSTOM COMPACT DIALOG MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 bg-black/85 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="glass-card max-w-sm w-full p-6 space-y-5 border border-gold/40 text-center m-4">
+            <div class="w-12 h-12 bg-gold/10 border border-gold/30 rounded-full flex items-center justify-center mx-auto text-gold text-lg">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="space-y-1">
+                <h4 class="text-sm font-bold text-slate-200" id="confirm-title">確認</h4>
+                <p class="text-xs text-slate-400 leading-relaxed" id="confirm-message">本当に実行しますか?</p>
+            </div>
+            <div class="flex justify-center gap-3 pt-2">
+                <button onclick="closeConfirm(false)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs transition-colors text-slate-300">
+                    キャンセル
+                </button>
+                <button onclick="closeConfirm(true)" class="px-4 py-2 rounded-xl bg-gold hover:bg-[#a68545] text-slate-950 font-bold text-xs transition-colors">
+                    確定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST POPUP -->
+    <div id="custom-toast" class="fixed bottom-6 right-6 z-50 bg-slate-900/95 border border-gold/40 rounded-xl px-5 py-3.5 shadow-2xl shadow-black/90 transition-all duration-300 opacity-0 pointer-events-none translate-y-2 flex items-center gap-3">
+        <span id="toast-icon" class="text-gold"></span>
+        <span id="toast-msg" class="text-xs text-white font-medium"></span>
+    </div>
+
     <script>
-        // === MASTER DATA ===
-        const MASTERY_DATA = { 
+        // === EXPERIENCE MASTERY TABLE DATABASE (1 to 120 Fully Interpolated) ===
+        const EXP_DATA = { 
             1: 22, 2: 80, 3: 120, 4: 168, 5: 280, 6: 420, 7: 637, 8: 788, 9: 893, 10: 1120,
             11: 1415, 12: 2247, 13: 1874, 14: 2214, 15: 2693, 16: 3260, 17: 4164, 18: 5058, 19: 6256, 20: 7360,
             21: 11981, 22: 13200, 23: 15034, 24: 17261, 25: 20276, 26: 26924, 27: 33370, 28: 40393, 29: 49018, 30: 59520,
@@ -255,730 +551,1184 @@
             71: 2420631622, 72: 2735200000, 73: 3087214520, 74: 3523167195, 75: 4007373232, 76: 4593976654, 77: 5531272727, 78: 6241779412, 79: 7187748853, 80: 8294174624,
             81: 11818633326, 82: 15279802336, 83: 17380222222, 84: 20284045045, 85: 23215228758, 86: 26879269341, 87: 31986409483, 88: 36672895251, 89: 42154914692, 90: 48528327586,
             91: 57420217391, 92: 63728169231, 93: 86074665354, 94: 120472075673, 95: 195412625000, 96: 307837090278, 97: 526941894374, 98: 600000000000, 99: 650000000000, 100: 700000000000,
-            110: 1200000000000, 120: 0
+            // 101 to 109 Interpolated
+            101: 745000000000, 102: 790000000000, 103: 840000000000, 104: 890000000000, 105: 940000000000, 106: 990000000000, 107: 1040000000000, 108: 1090000000000, 109: 1140000000000,
+            110: 1200000000000,
+            // 111 to 119 Interpolated
+            111: 1280000000000, 112: 1360000000000, 113: 1450000000000, 114: 1540000000000, 115: 1640000000000, 116: 1740000000000, 117: 1850000000000, 118: 1960000000000, 119: 2080000000000,
+            120: 0
         };
-        
-        const CATEGORY_MAP = {
-            1: { id: 1, name: "戦闘", color: "from-red-600 to-red-500", bg: "bg-red-950/40", border: "border-red-800/50", text: "text-red-400" },
-            2: { id: 2, name: "偵察", color: "from-amber-600 to-amber-500", bg: "bg-amber-950/40", border: "border-amber-800/50", text: "text-amber-400" },
-            3: { id: 3, name: "呪文", color: "from-indigo-600 to-indigo-500", bg: "bg-indigo-950/40", border: "border-indigo-800/50", text: "text-indigo-400" },
-            4: { id: 4, name: "防御", color: "from-emerald-600 to-emerald-500", bg: "bg-emerald-950/40", border: "border-emerald-800/50", text: "text-emerald-400" },
-            5: { id: 5, name: "強化", color: "from-rose-600 to-rose-500", bg: "bg-rose-950/40", border: "border-rose-800/50", text: "text-rose-400" },
-            6: { id: 6, name: "補助", color: "from-sky-600 to-sky-500", bg: "bg-sky-950/40", border: "border-sky-800/50", text: "text-sky-400" },
-            7: { id: 7, name: "活力", color: "from-violet-600 to-violet-500", bg: "bg-violet-950/40", border: "border-violet-800/50", text: "text-violet-400" },
-            8: { id: 8, name: "技巧", color: "from-teal-600 to-teal-500", bg: "bg-teal-950/40", border: "border-teal-800/50", text: "text-teal-400" }
+
+        // Helper to retrieve Exp of any level
+        function getExp(lv) {
+            return EXP_DATA[lv] !== undefined ? EXP_DATA[lv] : 0;
+        }
+
+        // 残り時間を「◯日 ◯時間」の直感的テキストに変換する汎用ヘルパー
+        function formatTimeLeft(days) {
+            if (days <= 0) return "0 時間";
+            
+            const d = Math.floor(days);
+            const h = Math.round((days - d) * 24);
+            
+            let finalD = d;
+            let finalH = h;
+            
+            // 24時間以上の繰り上がりを補正
+            if (finalH >= 24) {
+                finalD += 1;
+                finalH -= 24;
+            }
+            
+            if (finalD === 0) {
+                return `約 ${finalH} 時間`;
+            }
+            if (finalH === 0) {
+                return `約 ${finalD} 日`;
+            }
+            return `約 ${finalD}日 ${finalH}時間`;
+        }
+
+        // === ABILITIES CATEGORIES (ご要望のカラー構成に完全調整：活力を少し黄緑よりの緑に、補助をさらに薄いパステルサーモンピンクに調整) ===
+        const CATEGORIES = {
+            1: {
+                name: "戦闘", 
+                color: "text-red-400", 
+                bg: "bg-red-950/20", 
+                border: "border-red-900/35", 
+                label: "物理攻撃・狩り効率UP",
+                activeBg: "bg-red-500/10",
+                activeBorder: "border-red-500/50",
+                activeText: "text-red-300"
+            }, 
+            2: {
+                name: "偵察", 
+                color: "text-fuchsia-400", // 紫ピンク
+                bg: "bg-fuchsia-950/20", 
+                border: "border-fuchsia-900/35", 
+                label: "致命打・クリティカル",
+                activeBg: "bg-fuchsia-500/10",
+                activeBorder: "border-fuchsia-500/50",
+                activeText: "text-fuchsia-300"
+            }, 
+            3: {
+                name: "呪文", 
+                color: "text-indigo-400", 
+                bg: "bg-indigo-950/20", 
+                border: "border-indigo-900/35", 
+                label: "魔法威力・デバフ",
+                activeBg: "bg-indigo-500/10",
+                activeBorder: "border-indigo-500/50",
+                activeText: "text-indigo-300"
+            }, 
+            4: {
+                name: "防御", 
+                color: "text-cyan-400", // 浅葱色
+                bg: "bg-cyan-950/20", 
+                border: "border-cyan-900/35", 
+                label: "ダメージカット・盾",
+                activeBg: "bg-cyan-500/10",
+                activeBorder: "border-cyan-500/50",
+                activeText: "text-cyan-300"
+            },
+            5: {
+                name: "強化", 
+                color: "text-amber-500", // 琥珀色
+                bg: "bg-amber-950/20", 
+                border: "border-amber-900/35", 
+                label: "精霊属性強化",
+                activeBg: "bg-amber-500/10",
+                activeBorder: "border-amber-500/50",
+                activeText: "text-amber-300"
+            }, 
+            6: {
+                name: "補助", 
+                color: "text-[#ffb0a5]", // 【調整】さらに薄いパステルサーモンピンク
+                bg: "bg-[#ffb0a5]/5", 
+                border: "border-[#ffb0a5]/25", 
+                label: "ユーティリティ・探索",
+                activeBg: "bg-[#ffb0a5]/10",
+                activeBorder: "border-[#ffb0a5]/50",
+                activeText: "text-[#ffe5e2]"
+            }, 
+            7: {
+                name: "活力", 
+                color: "text-lime-400", // 緑（少し黄緑より）
+                bg: "bg-lime-950/20", 
+                border: "border-lime-900/35", 
+                label: "HP/マナ回復・生存",
+                activeBg: "bg-lime-500/10",
+                activeBorder: "border-lime-500/50",
+                activeText: "text-lime-300"
+            }, 
+            8: {
+                name: "技巧", 
+                color: "text-yellow-400", // 黄色
+                bg: "bg-yellow-950/20", 
+                border: "border-yellow-900/35", 
+                label: "移動速度・クールダウン軽減",
+                activeBg: "bg-yellow-500/10",
+                activeBorder: "border-yellow-500/50",
+                activeText: "text-yellow-300"
+            }
         };
 
         const ABILITIES = [
-            { name: "武器研磨", catId: 1 }, { name: "狩猟戦術", catId: 1 }, { name: "乱舞", catId: 1 }, { name: "テレノスの力", catId: 1 }, { name: "大地衝撃", catId: 1 }, { name: "武装解除", catId: 1 }, { name: "追跡", catId: 1 },
-            { name: "戦闘集中", catId: 2 }, { name: "鋭利な武器", catId: 2 }, { name: "急所攻略", catId: 2 }, { name: "セクレタの才能", catId: 2 }, { name: "精神麻痺", catId: 2 }, { name: "超感覚", catId: 2 }, { name: "猛毒発散", catId: 2 },
-            { name: "魂切り", catId: 3 }, { name: "闇の力", catId: 3 }, { name: "湧き上がる寒気", catId: 3 }, { name: "カリオンの洞察", catId: 3 }, { name: "呪文注入", catId: 3 }, { name: "睡眠誘導", catId: 3 }, { name: "酷寒の武器", catId: 3 },
-            { name: "防具腐食", catId: 4 }, { name: "防御態勢", catId: 4 }, { name: "武器ブロック", catId: 4 }, { name: "バリア生成", catId: 4 }, { name: "バリア展開", catId: 4 }, { name: "結界形成", catId: 4 }, { name: "鏡の盾", catId: 4 },
-            { name: "鋭い攻撃", catId: 5 }, { name: "魔法強化", catId: 5 }, { name: "火精霊", catId: 5 }, { name: "冷気精霊", catId: 5 }, { name: "雷精霊", catId: 5 }, { name: "必殺の一撃", catId: 5 }, { name: "業火の武器", catId: 5 }, { name: "貫通分析", catId: 5 },
-            { name: "慎重な攻撃", catId: 6 }, { name: "ギャンブル", catId: 6 }, { name: "放浪者", catId: 6 }, { name: "解剖学", catId: 6 }, { name: "補助", catId: 6 }, { name: "闇の武器", catId: 6 }, { name: "罠投擲", catId: 6 }, { name: "資源節約", catId: 6 }, { name: "治癒", catId: 6 },
-            { name: "強化回復薬", catId: 7 }, { name: "純粋なマナ回復薬", catId: 7 }, { name: "マナサイクル", catId: 7 }, { name: "光の武器", catId: 7 }, { name: "迅速な治療", catId: 7 }, { name: "生気吸収", catId: 7 }, { name: "克服", catId: 7 }, { name: "戦場の叫び", catId: 7 }, { name: "魔力発火", catId: 7 },
-            { name: "生命力転換", catId: 8 }, { name: "時間加速", catId: 8 }, { name: "瞬間移動", catId: 8 }, { name: "爆弾設置", catId: 8 }, { name: "浄化", catId: 8 }, { name: "九死一生", catId: 8 }, { name: "時間逆行", catId: 8 }, { name: "追撃の鎖", catId: 8 }, { name: "破壊の武器", catId: 8 }
+            // 戦闘 (cat: 1)
+            {name:"武器研磨",cat:1,desc:"自身の攻撃力を高め、対モンスターダメージを底上げする。"}, 
+            {name:"狩猟戦術",cat:1,desc:"一般狩場での獲得経験値およびドロップ確率が僅かに増加する。"}, 
+            {name:"乱舞",cat:1,desc:"連続攻撃時の最終攻撃スピードを一定割合増幅させる。"}, 
+            {name:"テレノスの力",cat:1,desc:"範囲スキルの攻撃力およびターゲット数が微増する。"}, 
+            {name:"大地衝撃",cat:1,desc:"一定確率で対象に微小な衝撃波を放ち、ヘイトを集める。"}, 
+            {name:"武装解除",cat:1,desc:"物理打撃時に一定確率で相手の防御力を弱化する。"}, 
+            {name:"追跡",cat:1,desc:"逃亡する対象への与ダメージが強化される。"},
+            
+            // 偵察 (cat: 2)
+            {name:"戦闘集中",cat:2,desc:"戦闘状態が維持される間、徐々に貫通力が成長する。"}, 
+            {name:"鋭利な武器",cat:2,desc:"クリティカル時のダメージを一定割合増幅させる。"}, 
+            {name:"急所攻略",cat:2,desc:"状態異常に陥っている対象へのクリティカル率を最大にする。"}, 
+            {name:"セクレタの才能",cat:2,desc:"自身の感知範囲を拡張し、背後攻撃を強化する。"}, 
+            {name:"精神麻痺",cat:2,desc:"クリティカルヒット時に確率で対象にスタンを付与。"}, 
+            {name:"超感覚",cat:2,desc:"敵の回避ステータスを一定量無視して攻撃が必中する。"}, 
+            {name:"猛毒発散",cat:2,desc:"クリティカル時に対象に猛毒スリップダメージを与える。"},
+            {name:"鋭い武器",cat:2,desc:"クリティカル発生率を固定値で上昇させる。"},
+
+            // 呪文 (cat: 3)
+            {name:"魂切り",cat:3,desc:"スキル命中時に対象の最大マナを一時的に削り取る。"}, 
+            {name:"闇の力",cat:3,desc:"魔法攻撃力を増幅し、魔法貫通ステータスを底上げ。"}, 
+            {name:"湧き上がる寒気",cat:3,desc:"氷結した対象へ与える魔法ダメージが増幅する。"}, 
+            {name:"カリオンの洞察",cat:3,desc:"詠唱時間が伴う大型呪文スキルの速度を向上。"}, 
+            {name:"呪文注入",cat:3,desc:"自己バフ時、次のスキルの魔法威力を大幅に強化する。"}, 
+            {name:"磁場生成",cat:3,desc:"周囲の敵を引き寄せる磁気エネルギーを発生させる。"}, 
+            {name:"睡眠誘導",cat:3,desc:"単体魔法ヒット時に低確率で対象を数秒間眠らせる。"}, 
+            {name:"酷寒の武器",cat:3,desc:"攻撃時、極小確率で対象を凍結状態にして停止させる。"},
+
+            // 防御 (cat: 4)
+            {name:"防具腐食",cat:4,desc:"近接攻撃を受けた際、攻撃側の武器を一時的に弱化する。"}, 
+            {name:"防御態勢",cat:4,desc:"自身の基本物理防御力およびシールド獲得量を高める。"}, 
+            {name:"武器ブロック",cat:4,desc:"敵物理スキルを一定確率で無効化、またはブロックする。"}, 
+            {name:"バリア生成",cat:4,desc:"HPが一定値未満に減少した際に強制シールドを展開。"}, 
+            {name:"バリア展開",cat:4,desc:"周囲のパーティメンバーにも微小なダメージバリアを分け合う。"}, 
+            {name:"結界形成",cat:4,desc:"一定時間ごとに自身へ魔法ダメージ軽減バリアを張る。"}, 
+            {name:"鏡の盾",cat:4,desc:"受けた物理ダメージの数パーセントを攻撃者へそのまま反射。"},
+
+            // 強化 (cat: 5)
+            {name:"鋭い攻撃",cat:5,desc:"全物理スキルの基本威力を固定値で補正する。"}, 
+            {name:"魔法強化",cat:5,desc:"全属性魔法スキルのダメージ倍率を底上げ。"}, 
+            {name:"火精霊",cat:5,desc:"火属性攻撃をブーストし、対象を火傷状態にしやすくする。"}, 
+            {name:"冷気精霊",cat:5,desc:"水属性（冷気）ダメージを高め、移動速度低下時間を延長。"}, 
+            {name:"雷精霊",cat:5,desc:"風・雷属性ダメージを強化。クリティカル時に連鎖ダメージ。"}, 
+            {name:"必殺の一撃",cat:5,desc:"スキル攻撃時、10%の確率でダメージが2倍になる。"}, 
+            {name:"業火の武器",cat:5,desc:"武器に火属性を纏わせ、範囲攻撃能力を付加する。"}, 
+            {name:"貫通分析",cat:5,desc:"敵の物理防御力の一定割合を貫通・無視する。"},
+
+            // 補助 (cat: 6)
+            {name:"慎重な攻撃",cat:6,desc:"ミスヒット（回避）の発生確率をほぼゼロに軽減する。"}, 
+            {name:"闇の武器",cat:6,desc:"通常攻撃に闇属性の追加固定ダメージを付与する。"}, 
+            {name:"罠投擲",cat:6,desc:"対象の移動力を奪う減速罠を前方に設置・投擲する。"}, 
+            {name:"資源節約",cat:6,desc:"スキル発動時の消費マナ（MP）を確率でゼロにする。"}, 
+            {name:"治癒",cat:6,desc:"自身が受ける回復魔法・回復薬の効果をパーセンテージ増幅。"}, 
+            {name:"解剖学",cat:6,desc:"人間型・亜人型モンスターに対する特効ダメージを付与。"}, 
+            {name:"ギャンブル",cat:6,desc:"ギャンブル要素を含み、極大または極小の変動ダメージを与える。"}, 
+            {name:"持続治癒",cat:6,desc:"非戦闘状態時に数秒ごとにHPが自動でリジェネ。"}, 
+            {name:"弱点分析",cat:6,desc:"同一対象を攻撃し続けると、スタックに応じて与ダメージが上昇。"},
+
+            // 活力 (cat: 7)
+            {name:"強化回復薬",cat:7,desc:"回復薬（ポーション）の初期使用時回復量を強化。"}, 
+            {name:"純粋なマナ回復薬",cat:7,desc:"マナ回復アイテムの効率およびクールダウンを改善。"}, 
+            {name:"マナサイクル",cat:7,desc:"マナが枯渇した際、数秒間マナ回復スピードを最大にする。"}, 
+            {name:"光の武器",cat:7,desc:"光の追加ダメージを発生させ、一定確率で相手の命中を削る。"}, 
+            {name:"迅速な治癒",cat:7,desc:"被回復魔法を受けた直後、一時的に自身の防御力が増加。"},
+            {name:"生気吸収",cat:7,desc:"攻撃ヒット時に一定確率で与ダメージの数%分HPを吸収."}, 
+            {name:"克服",cat:7,desc:"行動不能系デバフを解除した際、一時的にHPを高速自己回復。"}, 
+            {name:"戦場の叫び",cat:7,desc:"雄叫びを上げて周囲のパーティメンバーの最大HPを強化。"},
+            {name:"魔力発火",cat:7,desc:"魔法スキルヒット時、一時的に自身の魔法貫通を成長させる。"},
+
+            // 技巧 (cat: 8)
+            {name:"生命力転換",cat:8,desc:"HPを犠牲にして瞬間的にMPを最大まで充填する。"}, 
+            {name:"時間加速",cat:8,desc:"すべての保有アクティブスキルのクールダウンを短縮。"}, 
+            {name:"放浪者",cat:8,desc:"非戦闘時の移動スピードおよびスタミナ回復を補正。"}, 
+            {name:"瞬間移動",cat:8,desc:"任意の記録ポイントへいつでも即時テレポート可能に。"}, 
+            {name:"爆弾設置",cat:8,desc:"回避（ローリング）使用時、足元に時限爆弾を自動設置する。"}, 
+            {name:"浄化",cat:8,desc:"自身にかかっているデバフ（有害な状態異常）を1個即座に消去。"}, 
+            {name:"九死一生",cat:8,desc:"致命傷 of 回避クールダウンがさらに短縮される。"}, 
+            {name:"時間逆行",cat:8,desc:"数秒前の位置およびHP/MP状態に自身を引き戻す。"}, 
+            {name:"追撃の鎖",cat:8,desc:"敵から離脱される際, 確率で対象を鎖で引き戻して拘束する。"}, 
+            {name:"破壊の武器",cat:8,desc:"シールド（保護膜）への与ダメージを3倍に引き上げる。"}
         ];
 
-        const HIDDEN_JOBS = [
+        // === ACCURATE HIDDEN CLASS CONDITIONS & LEVEL BONUS STATS (9鯖完全準拠) ===
+        const JOBS = [
             {
-                name: "剣聖",
-                description: "極限まで研ぎ澄まされた剣技で、近接戦闘において圧倒的な火力を誇る。敵の攻撃を受け流し、強力な反撃を繰り出せる一流の戦士。",
-                tags: ["必殺の一撃", "時間加速", "セクレタの才能", "武器ブロック", "乱舞", "慎重な攻撃"],
-                abilityPairs: [
-                    { left: "必殺の一撃", right: "時間加速" },
-                    { left: "セクレタの才能", right: "武器ブロック" },
-                    { left: "乱舞", right: "慎重な攻撃" }
-                ],
-                levels: {
+                name: "剣聖", 
+                role: "物理特化・超近接アタッカー", 
+                req: ["必殺の一撃", "時間加速", "セクレタの才能", "武器ブロック", "乱舞", "慎重な攻撃"],
+                abilities: {
                     1: "通常攻撃時、25%の確率で追加複合ダメージ(25%+25%)を与える。",
                     100: "近距離防御貫通+50",
                     200: "移動速度+8%",
                     300: "攻撃速度+8%",
                     400: "攻撃力+70",
                     500: "近距離攻撃力+50、全てのダメージ+3.5%",
-                    600: "攻撃を受けると、10秒間、次に受ける3回の攻撃で自分の被ダメージ(30%)が減少。",
+                    600: "攻撃を受けると、10秒間、次に受ける3回の攻撃で自分の被ダメージ(30%)が減少する。",
                     700: "防御力+100"
                 }
             },
             {
-                name: "デストロイヤー",
-                description: "跳躍して敵陣へ突撃し、広範囲に壊滅的なダメージを与える。一時的に無敵状態となり、敵を恐怖に陥れる豪傑。",
-                tags: ["瞬間移動", "闇の力", "ギャンブル", "武器研磨", "業火の武器", "鋭利な武器"],
-                abilityPairs: [
-                    { left: "瞬間移動", right: "闇 of 闇の力", realRight: "闇 of 闇の力" },
-                    { left: "瞬間移動", right: "闇の力" },
-                    { left: "ギャンブル", right: "武器研磨" },
-                    { left: "業火の武器", right: "鋭利な武器" }
-                ],
-                levels: {
-                    1: "[アクティブ効果] 7M内の敵に跳躍して対象の周囲に複合ダメージ(100%+100%)を与え、80%の確率で2秒間転倒を付与(最大10体)。また、自分に3.5秒間ダメージ無効状態を付与する。",
+                name: "デストロイヤー", 
+                role: "近接高火力破壊術・スタン特化", 
+                req: ["瞬間移動", "闇 of 力?", "ギャンブル", "武器研磨", "業火の武器", "鋭利な武器"],
+                abilities: {
+                    1: "[固有アクティブ] 7M内の敵に跳躍して対象の周囲に複合ダメージ(100%+100%)を与え、+80%の確率で2秒間転倒を付与(最大10体). また、自分に3.5秒間ダメージ無効状態を付与する。",
                     100: "防御貫通+50",
                     200: "移動速度+8%",
                     300: "攻撃速度+8%",
                     400: "攻撃力+70",
                     500: "スキルダメージ+7%、クールタイム減少+10%",
-                    600: "攻撃ヒット時、60秒間, 自分の攻撃力(100)と防御力(100)が増加。",
+                    600: "攻撃ヒット時、60秒間、自分の攻撃力(100)と防御力(100)が増加する。",
                     700: "攻撃力+100、防御力+100"
                 }
             },
             {
-                name: "酷寒の騎士",
-                description: "氷の魔力と剣技を融合させ、敵を氷結させて身動きを奪う。敵の移動速度を極限まで奪い、じわじわと追い詰める冷酷な騎士。",
-                tags: ["鋭い攻撃", "生命力転換", "生気吸収", "解剖学", "酷寒の武器", "大地衝撃"],
-                abilityPairs: [
-                    { left: "鋭い攻撃", right: "生命力転換" },
-                    { left: "生気吸収", right: "解剖学" },
-                    { left: "酷寒の武器", right: "大地衝撃" }
-                ],
-                levels: {
-                    1: "[アクティブ効果] 対象に複合ダメージ(250%+250%)を与え、4秒間凍結を付与。凍結終了後, 10秒間移動速度(30%)を減少。対象の周囲にも10秒間移動速度(30%)減少エリアを展開。",
+                name: "酷寒の騎士", 
+                role: "クラウドコントロール（凍結・拘束妨害）", 
+                req: ["鋭い攻撃", "生命力転換", "生気吸収", "解剖学", "酷寒の武器", "大地衝撃"],
+                abilities: {
+                    1: "[固有アクティブ] 対象に複合ダメージ(250%+250%)を与え、4秒間凍結を付与する。凍結終了後、10秒間移動速度を30%減少させ、対象の周囲にも同様のデバフを付与する。",
                     100: "耐性無視+50",
                     200: "移動速度+8%",
                     300: "攻撃速度+8%",
                     400: "攻撃力+70",
                     500: "会心+100、会心ダメージ+7%",
-                    600: "HPが50%以下になると自分の耐性(100)が増加。",
+                    600: "HPが50%以下になると、自分の耐性(100)が増加する。",
                     700: "攻撃力+100"
                 }
             },
             {
-                name: "古代守護者",
-                description: "古代の結界魔法と精霊の加護をもって、味方を守り抜く鉄壁の守護者。被ダメージを抑え、シールドを張る生存力特化職。",
-                tags: ["結界形成", "慎重な攻撃", "克服", "火精霊", "呪文注入", "放浪者"],
-                abilityPairs: [
-                    { left: "結界形成", right: "慎重な攻撃" },
-                    { left: "克服", right: "火精霊" },
-                    { left: "呪文注入", right: "放浪者" }
-                ],
-                levels: {
-                    1: "通常攻撃ヒット時、100%の確率で受ける全てのダメージの0.5%分を即座にシールドとして吸収する。",
-                    100: "すべての属性耐性+50",
-                    200: "最大HP+10%",
-                    300: "被ダメージ減少+5%",
-                    450: "防御力+70",
-                    500: "シールド効果量+10%",
-                    600: "HPが30%以下になると、10秒間自分の最大HP of 20%に相当するシールドを生成（クールタイム120秒）。",
-                    700: "防御力+120"
+                name: "古代守護者", 
+                role: "超耐久メインタンク", 
+                req: ["結界形成", "慎重な攻撃", "克服", "火精霊", "呪文注入", "放浪者"],
+                abilities: {
+                    1: "通常攻撃ヒット時、100%の確率で全ての与ダメージ(0.5%)およびモンスターへの与ダメージ(0.4%)が増加。効果は最大20回まで重複する。",
+                    100: "防御力+50",
+                    200: "移動速度+8%",
+                    300: "攻撃速度+8%",
+                    400: "攻撃力+70",
+                    500: "防御力+75、攻撃力+100",
+                    600: "失ったHP4%ごとに、自分の攻撃力(5)と防御力(5)が増加する（失ったHPは最大80%まで適用され、最大各+100ずつ上昇）。",
+                    700: "防御力+100、耐性+100"
                 }
             },
             {
-                name: "シャドウナイト",
-                description: "影の力を武器に宿し、敵の生命力を吸収しながら弱体化させる暗殺魔術騎士。デバフと継戦能力に優れる。",
-                tags: ["魂切り", "超感覚", "生気吸収", "鋭利な武器", "闇の力", "精神麻痺"],
-                abilityPairs: [
-                    { left: "魂切り", right: "超感覚" },
-                    { left: "生気吸収", right: "鋭利な武器" }, 
-                    { left: "闇の力", right: "精神麻痺" }
-                ],
-                levels: {
-                    1: "スキル使用時、15%の確率で対象に「暗闇」を付与し、さらに自身の与ダメージの15%分のHPを即座に回復する。",
-                    100: "近距離・魔法貫通+40",
-                    200: "最大HP+8%",
-                    300: "クリティカル確率+4%",
-                    400: "魔法攻撃力+70",
-                    500: "全てのデバフ付与成功率+8%",
-                    600: "暗闇状態の敵への攻撃時, クリティカルダメージが20%増加する。",
-                    700: "攻撃力+80、HP+5%"
+                name: "不滅の騎士", 
+                role: "HP吸収生存特化前衛ファイター", 
+                req: ["追跡", "防御態勢", "必殺の一撃", "超感覚", "爆弾設置", "セクレタの才能"],
+                abilities: {
+                    1: "自分のHPが10%以下になると5秒間不死状態になり、全ての被ダメージ、状態異常、弱体効果に対して完全に無効化する。不死終了時、最大HP of 30%分HPを回復（回復量は最大15,000制限）。",
+                    100: "防御貫通+50",
+                    200: "移動速度+8%",
+                    300: "攻撃速度+8%",
+                    400: "攻撃力+70",
+                    500: "攻撃力+75、被ダメージ減少+3.5%",
+                    600: "攻撃ヒット時, 30秒間、自分の命中(100)と会心(100)が増加する。",
+                    700: "防御力+100"
                 }
             },
             {
-                name: "ウィンドランナー",
-                description: "目にも留まらぬ速さで戦場を駆け、風の加護を得て敵のあらゆる猛攻を回避・翻弄するスピードスター。",
-                tags: ["時間加速", "急所攻略", "追跡", "狩猟戦術", "戦闘集中", "鋭い攻撃"],
-                abilityPairs: [
-                    { left: "時間加速", right: "急所攻略" },
-                    { left: "追跡", right: "狩猟戦術" },
-                    { left: "戦闘集中", right: "鋭い攻撃" }
-                ],
-                levels: {
-                    1: "回避成功時, 100%の確率で5秒間自身の攻撃速度を15%上昇させ、スキルクールタイムを1秒短縮する（クールタイム3秒）。",
-                    100: "遠距離攻撃力+45",
-                    200: "移動速度+10%",
-                    300: "回避値+60",
-                    450: "攻撃速度+5%",
-                    500: "クリティカルダメージ+8%",
-                    600: "戦闘状態を5秒維持するごとに、10秒間受けるダメージを5%减らす（最大3スタック）。",
-                    700: "敏捷+15、攻撃力+100"
+                name: "トリニティ", 
+                role: "多段ヒット連撃・自己増幅バッファー", 
+                req: ["鋭い攻撃", "魔力発火", "マナサイクル", "超感覚", "破壊の武器", "弱点分析"],
+                abilities: {
+                    1: "通常攻撃時、100%の確率で一定時間自身に効果を付与。バフ効果は「攻撃速度(1%)」「防御貫通(10)」「会心10/会心ダメージ1%」の順番で、25階重複するごとに順次切り替わりながら循環する。",
+                    100: "防御力+50",
+                    200: "移動速度+8%",
+                    300: "攻撃速度+8%",
+                    400: "攻撃力+70",
+                    500: "攻撃力+75、全ダメージ+3.5%",
+                    600: "攻撃スキルヒット時、60秒間、自分の攻撃力(100)と命中(100)、会心(100)が増加する。",
+                    700: "攻撃力+100、攻撃速度+5%"
                 }
             },
             {
-                name: "ウォークライヤー",
-                description: "強靭な肉体から繰り出される咆咆で味方を鼓舞し、敵の防御網を内側から崩壊させる豪快なサポーター盾職。",
-                tags: ["テレノスの力", "防御態勢", "活力", "克服", "バリア生成", "生命力転換"],
-                abilityPairs: [
-                    { left: "テレノスの力", right: "防御態勢" },
-                    { left: "活力", right: "克服" },
-                    { left: "バリア生成", right: "生命力転換" }
-                ],
-                levels: {
-                    1: "[アクティブ効果] 周囲10M of 敵を挑発し、自身の最大HP15%分のシールドを展開。同時に, 周囲の味方の攻撃力を10秒間10%強化する。",
-                    100: "挑発命中率+15%",
-                    200: "最大HP+12%",
-                    300: "防御力+50",
-                    400: "被回復量+10%",
-                    500: "シールド持続時間+2秒",
-                    600: "シールド消滅時、周囲5M of 敵へシールド初期値の50%分の反射物理ダメージを与える。",
-                    700: "最大HP+1500、防御力+80"
+                name: "嵐の導き手", 
+                role: "広範囲マルチエレメンタルマジシャン", 
+                req: ["鏡の盾", "戦場の叫び", "冷気精霊", "闇の力", "磁場生成", "猛毒発散"],
+                abilities: {
+                    1: "[固有アクティブ：渦巻く嵐] 敵に200×8回の固定ダメージ＋複合ダメージ(200%+200%)を与えて引き寄せ、3秒間移動速度を70%減少させる。スキル使用中は状態異常無効。",
+                    100: "スキルダメージ+7%",
+                    200: "移動速度+8%",
+                    300: "攻撃速度+8%",
+                    400: "攻撃力+70",
+                    500: "スキルダメージ+15%",
+                    600: "スキル命中時、30秒間、自身の移動速度が15%上昇する。",
+                    700: "攻撃速度+5%"
                 }
             },
             {
-                name: "インクイジター",
-                description: "過酷な審問と雷精霊の加護をもって, いかなる邪悪や結界をも粉砕し、相手の能力を奪い去る魔封じの審問官。",
-                tags: ["呪文注入", "雷精霊", "魂切り", "防具腐食", "鋭い攻撃", "精神麻痺"],
-                abilityPairs: [
-                    { left: "呪文注入", right: "雷精霊" },
-                    { left: "魂切り", right: "防具腐食" },
-                    { left: "鋭い攻撃", right: "精神麻痺" }
-                ],
-                levels: {
-                    1: "攻撃命中時, 対象 of 受けているバフ効果を1つ解除。バフ解除に成功した場合、対象に5秒間「魔力沈黙」を付与する。",
-                    100: "全状態異常的中+10%",
-                    200: "魔法攻撃力+50",
-                    300: "移動速度+6%",
-                    450: "攻撃力+60",
-                    500: "バフ消去時の追加ダメージ+15%",
-                    600: "沈黙状態のターゲットに与えるダメージが12%増加する。",
-                    700: "攻撃力+120"
+                name: "祝福の女神", 
+                role: "最強ヒーラー・パーティ支援サポート", 
+                req: ["結界形成", "雷精霊", "生気吸収", "時間加速", "放浪者", "持続治癒"],
+                abilities: {
+                    1: "[固有アクティブ：女神の手] 10秒間、周囲15m内の味方（最大10人）の攻撃力を120、移動速度を20%、状態異常抵抗を10%増加させる。",
+                    100: "耐性+50",
+                    200: "移動速度+8%",
+                    300: "攻撃速度+8%",
+                    400: "攻撃力+70",
+                    500: "防御力+75、クールタイム減少+10%",
+                    600: "スキル命中時、1分間、自身の攻撃力+100、防御力+100、攻撃速度+10%が増加する。",
+                    700: "攻撃力+100、攻撃速度+5%"
                 }
             }
         ];
 
-        // Global State
+        // 9鯖データの再訂正 (デストロイヤー闇の力への補正)
+        JOBS.forEach(j => {
+            if(j.name === "デストロイヤー") {
+                j.req = ["瞬間移動", "闇の力", "ギャンブル", "武器研磨", "業火の武器", "鋭利な武器"];
+            }
+        });
+
+        // === GLOBAL STORAGE STATES ===
         let sims = [];
         let selectedAbilities = [];
         let activeJobName = "剣聖";
-        let categoryExpanded = { 1:true, 2:true, 3:true, 4:true, 5:true, 6:true, 7:true, 8:true };
         let activeTab = "mastery";
+        let categoryExpanded = {1:true, 2:true, 3:true, 4:true, 5:true, 6:true, 7:true, 8:true};
+        let savedBuilds = { 1: [], 2: [], 3: [] };
+        
+        // 経験値テーブルの表示モード（簡易表示：false, 全レベル：true）
+        let showAllLevels = false; 
 
-        // Helper
-        function getExp(lv) {
-            const keys = Object.keys(MASTERY_DATA).map(Number).sort((a,b)=>a-b);
-            let prev = keys[0];
-            for (let k of keys) {
-                if (k > lv) break;
-                prev = k;
+        let confirmPromiseResolver = null;
+
+        // === TOAST & MODAL CONTROLLERS ===
+        function showToast(iconHtml, message) {
+            const toast = document.getElementById('custom-toast');
+            document.getElementById('toast-icon').innerHTML = iconHtml;
+            document.getElementById('toast-msg').innerText = message;
+            
+            toast.style.opacity = '1';
+            toast.style.pointerEvents = 'auto';
+            toast.style.transform = 'translateY(0)';
+            
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            window.toastTimeout = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.pointerEvents = 'none';
+                toast.style.transform = 'translateY(8px)';
+            }, 3000);
+        }
+
+        function triggerConfirm(title, message, callback) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('opacity-100'), 10);
+            confirmPromiseResolver = callback;
+        }
+
+        function closeConfirm(isConfirmed) {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (isConfirmed && typeof confirmPromiseResolver === 'function') {
+                    confirmPromiseResolver();
+                }
+                confirmPromiseResolver = null;
+            }, 200);
+        }
+
+        function toggleBackupCard() {
+            const card = document.getElementById('backup-card');
+            card.classList.toggle('hidden');
+            if(!card.classList.contains('hidden')) {
+                const currentData = localStorage.getItem('l9_comprehensive_storage_v9');
+                document.getElementById('backup-string').value = currentData || "";
             }
-            return MASTERY_DATA[prev];
-        }
-        const formatNum = (n) => new Intl.NumberFormat().format(Math.floor(n));
-
-        // === SIMULATORS ===
-        function addSimulator() {
-            sims.push({ id: Date.now(), label: "新スケジュール", hours: 1, expPerMin: 1000000 });
-            renderSims();
-            calculate();
         }
 
-        function renderSims() {
-            const container = document.getElementById('simulators-container');
-            container.innerHTML = sims.map(s => `
-                <div class="bg-slate-900/40 p-3 rounded-xl flex items-center gap-3 border border-slate-800">
-                    <input type="text" value="${s.label}" oninput="updateSim(${s.id},'label',this.value)" class="bg-transparent text-xs font-bold text-slate-300 w-full focus:outline-none">
-                    <input type="number" value="${s.hours}" oninput="updateSim(${s.id},'hours',this.value)" class="w-12 bg-slate-800 text-center text-xs rounded text-white py-1">
-                    <input type="number" value="${s.expPerMin}" oninput="updateSim(${s.id},'expPerMin',this.value)" class="w-24 bg-slate-800 text-right text-xs rounded px-2 text-gold py-1">
-                    <button onclick="removeSim(${s.id})" class="text-slate-600 hover:text-red-400 px-1"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-            `).join('');
+        function copyBackupString() {
+            const el = document.getElementById('backup-string');
+            el.select();
+            document.execCommand('copy');
+            showToast('<i class="fa-solid fa-copy text-green-400"></i>', '設定暗号化テキストをクリップボードにコピーしました！');
         }
 
-        function updateSim(id, f, v) { 
-            const s = sims.find(x => x.id === id); 
-            if(s) { 
-                s[f] = f === 'label' ? v : parseFloat(v) || 0; 
-                calculate(); 
-            } 
+        function importBackupString() {
+            const val = document.getElementById('backup-string').value.trim();
+            if (!val) {
+                showToast('<i class="fa-solid fa-xmark text-red-400"></i>', 'インポート対象のテキストが見つかりません。');
+                return;
+            }
+            try {
+                const parsed = JSON.parse(val);
+                if (parsed.lv === undefined || parsed.sims === undefined) {
+                    throw new Error("Invalid schema structure");
+                }
+                localStorage.setItem('l9_comprehensive_storage_v9', val);
+                loadLocal();
+                renderSims();
+                initHiddenJob();
+                calculate();
+                switchTab(activeTab);
+                toggleBackupCard();
+                showToast('<i class="fa-solid fa-file-import text-green-400"></i>', '環境データの復元に成功しました！');
+            } catch (e) {
+                showToast('<i class="fa-solid fa-triangle-exclamation text-red-500"></i>', '不適切なバックアップコードです。再コピーをお試しください。');
+            }
         }
 
-        function removeSim(id) { 
-            sims = sims.filter(x => x.id !== id); 
-            renderSims(); 
-            calculate(); 
-        }
-
-        // === CALCULATION (MASTERY) ===
+        // === SYSTEM EXP CALCS ===
         function calculate() {
-            const lv = parseInt(document.getElementById('input-lv').value) || 1;
+            const lvInput = document.getElementById('input-lv');
+            const targetLvInput = document.getElementById('input-target-lv');
+            
+            let lv = parseInt(lvInput.value) || 50;
+            let targetLv = parseInt(targetLvInput.value) || 60;
+            
+            // 安全限界ガード
+            if (lv < 1) { lv = 1; lvInput.value = 1; }
+            if (lv > 119) { lv = 119; lvInput.value = 119; }
+            if (targetLv <= lv) { targetLv = lv + 1; targetLvInput.value = targetLv; }
+            if (targetLv > 120) { targetLv = 120; targetLvInput.value = 120; }
+
             const pct = parseFloat(document.getElementById('input-percent').value) || 0;
             const baseMin = parseFloat(document.getElementById('input-minexp').value) || 0;
+            
             const nextExp = getExp(lv);
-            const expRem = nextExp * (1 - pct / 100);
+            const currentExpPassed = nextExp * (pct / 100);
+            const currentLevelRemaining = nextExp - currentExpPassed;
 
-            let dExp = 0, tHrs = 0;
-            sims.forEach(s => { dExp += (s.expPerMin * 60 * s.hours); tHrs += s.hours; });
-            const finalDaily = dExp + (baseMin * 60 * Math.max(0, 24 - tHrs));
+            // Compute total daily output
+            let simulatedDailyExp = 0;
+            let simulatedHrs = 0;
+            sims.forEach(s => {
+                simulatedDailyExp += (s.expPerMin * 60 * s.hours);
+                simulatedHrs += s.hours;
+            });
+            
+            // 時間の過多アラート
+            const warningBadge = document.getElementById('sim-warning');
+            const hoursBadge = document.getElementById('total-hours-badge');
+            if (simulatedHrs > 24) {
+                warningBadge.classList.remove('hidden');
+                hoursBadge.innerText = simulatedHrs.toFixed(1);
+            } else {
+                warningBadge.classList.add('hidden');
+            }
 
-            document.getElementById('res-daily-exp').innerText = formatNum(finalDaily);
-            document.getElementById('res-daily-pct').innerText = (finalDaily / nextExp * 100).toFixed(2) + "% 増 / 日";
-            document.getElementById('res-time-left').innerText = finalDaily > 0 ? (expRem / finalDaily).toFixed(2) + " 日" : "--";
-            document.getElementById('res-exp-left').innerText = "残り " + formatNum(expRem) + " Exp";
+            // 実効最終日給計算
+            const finalDaily = simulatedDailyExp + (baseMin * 60 * Math.max(0, 24 - simulatedHrs));
+            
+            document.getElementById('res-daily-exp').innerText = formatNum(finalDaily) + " Exp";
+            document.getElementById('res-daily-pct').innerText = nextExp > 0 ? (finalDaily / nextExp * 100).toFixed(3) + " % /日" : "-";
+            
+            // 1. 次レベル到達まで
+            let timeLeftText = "--";
+            if (finalDaily > 0) {
+                const dayValue = (currentLevelRemaining / finalDaily);
+                timeLeftText = formatTimeLeft(dayValue);
+            }
+            document.getElementById('res-time-left').innerText = timeLeftText;
+            document.getElementById('res-exp-left').innerText = "残り " + formatNum(currentLevelRemaining) + " Exp";
 
-            renderTable(lv, finalDaily);
+            // 2. 目標レベル到達まで (累積計算)
+            let accumulatedTargetExp = currentLevelRemaining; // 今のレベルの残り分
+            for (let i = lv + 1; i < targetLv; i++) {
+                accumulatedTargetExp += getExp(i);
+            }
+
+            let targetTimeLeftText = "--";
+            let targetDateText = "達成予想: --";
+            if (finalDaily > 0) {
+                const daysNeeded = (accumulatedTargetExp / finalDaily);
+                targetTimeLeftText = formatTimeLeft(daysNeeded);
+                
+                // 日付を予測
+                const estimateDate = new Date();
+                estimateDate.setSeconds(estimateDate.getSeconds() + (daysNeeded * 24 * 3600));
+                
+                const year = estimateDate.getFullYear();
+                const month = estimateDate.getMonth() + 1;
+                const date = estimateDate.getDate();
+                const hours = String(estimateDate.getHours()).padStart(2, '0');
+                const minutes = String(estimateDate.getMinutes()).padStart(2, '0');
+                
+                targetDateText = `${year}年${month}月${date}日 ${hours}:${minutes} 頃`;
+            }
+            document.getElementById('res-target-time-left').innerText = targetTimeLeftText;
+            document.getElementById('res-target-date').innerText = targetDateText;
+
+            renderTable(lv, targetLv, finalDaily);
             calcCraft();
+            
+            // 職業タブをレベル変動に完全に追従させるための再レンダリング呼び出し
+            renderJobDetails(); 
+            
             saveLocal();
         }
 
-        function renderTable(curLv, dExp) {
+        // テーブル表示モード切替
+        function toggleTableDisplayMode() {
+            showAllLevels = !showAllLevels;
+            const btn = document.getElementById('btn-table-mode');
+            if (showAllLevels) {
+                btn.innerHTML = `<i class="fa-solid fa-expand"></i> 全レベル表示中`;
+                btn.classList.remove('bg-gold/10', 'text-gold');
+                btn.classList.add('bg-green-500/10', 'text-green-400', 'border-green-500/30');
+                showToast('<i class="fa-solid fa-expand text-green-400"></i>', '経験値データベースを全レベル展開表示しました。');
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-compress"></i> 簡易表示中 (前後10Lv)`;
+                btn.classList.add('bg-gold/10', 'text-gold');
+                btn.classList.remove('bg-green-500/10', 'text-green-400', 'border-green-500/30');
+                showToast('<i class="fa-solid fa-compress text-gold"></i>', 'マスタリーテーブルを簡易表示に切り替えました。');
+            }
+            calculate();
+        }
+
+        function renderTable(curLv, targetLv, dExp) {
             const tbody = document.getElementById('mastery-table-body');
-            let rows = "", total = 0;
-            for(let i=1; i<=120; i++) {
+            let rows = "";
+            
+            const range = 10;
+            const minShow = curLv - range;
+            const maxShow = curLv + range;
+            
+            let cumulativeExpArray = [];
+            let tempTotal = 0;
+            for (let i = 1; i <= 120; i++) {
+                cumulativeExpArray[i] = tempTotal;
+                tempTotal += getExp(i);
+            }
+
+            let lastRenderedLv = 0;
+
+            for (let i = 1; i <= 120; i++) {
                 const nxt = getExp(i);
-                rows += `<tr id="row-lv-${i}" class="${i===curLv ? 'row-highlight' : ''} text-xs font-mono">
-                    <td class="p-4 ${i===curLv?'text-white':'text-gold'}">LV.${i}</td>
-                    <td class="p-4 text-right">${formatNum(nxt)}</td>
-                    <td class="p-4 text-center">${dExp>0 ? (nxt/dExp).toFixed(2)+'日' : '-'}</td>
-                    <td class="p-4 text-right text-slate-600">${formatNum(total)}</td>
-                </tr>`;
-                total += nxt;
+                
+                if (!showAllLevels) {
+                    const isNearCurrent = (i >= minShow && i <= maxShow);
+                    const isSpecialLevel = (i === curLv || i === targetLv);
+                    
+                    if (!isNearCurrent && !isSpecialLevel) {
+                        continue;
+                    }
+                    
+                    if (lastRenderedLv > 0 && i - lastRenderedLv > 1) {
+                        rows += `
+                            <tr class="bg-slate-950/25">
+                                <td colspan="5" class="p-2.5 text-center text-[10px] text-slate-500 tracking-widest font-bold">
+                                    <i class="fa-solid fa-ellipsis-vertical mr-1 text-slate-700"></i> LV.${lastRenderedLv + 1} 〜 LV.${i - 1} は折りたたまれています
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+
+                lastRenderedLv = i;
+
+                let rowClass = "";
+                if (i === curLv) {
+                    rowClass = "row-highlight";
+                } else if (i === targetLv) {
+                    rowClass = "row-target-highlight";
+                }
+                
+                rows += `
+                    <tr id="row-lv-${i}" class="${rowClass} hover:bg-slate-900/30 transition-colors border-b border-slate-800/30">
+                        <td class="p-4 ${i === curLv ? 'text-white font-black' : (i === targetLv ? 'text-green-450 font-black' : 'text-[#c5a059]')}">
+                            LV.${i} ${i === curLv ? ' <span class="text-[9px] bg-gold text-slate-950 px-1 py-0.25 rounded font-bold ml-1.5">現在</span>' : ''}${i === targetLv ? ' <span class="text-[9px] bg-green-500 text-white px-1 py-0.25 rounded font-bold ml-1.5">目標</span>' : ''}
+                        </td>
+                        <td class="p-4 text-right">${nxt > 0 ? formatNum(nxt) : '<span class="text-slate-650 font-bold">MAX</span>'}</td>
+                        <td class="p-4 text-center text-slate-400">${dExp > 0 && nxt > 0 ? ((nxt / dExp) * 100).toFixed(1) + '%' : '-'}</td>
+                        <td class="p-4 text-center text-green-450 font-medium">${dExp > 0 && nxt > 0 ? (nxt / dExp).toFixed(1) + ' 日' : '-'}</td>
+                        <td class="p-4 text-right text-slate-550">${formatNum(cumulativeExpArray[i])}</td>
+                    </tr>
+                `;
             }
             tbody.innerHTML = rows;
         }
 
-        // === CRAFTING ===
+        // 乗り物・核製作素材計算システム V2 完全準拠化
         function calcCraft() {
-            const th = parseInt(document.getElementById('craft-target-high').value) || 0;
-            const tn = parseInt(document.getElementById('craft-target-normal').value) || 0;
-            const rs = (th*1500)+(tn*300), ro = (th*200)+(tn*20);
-            const totalO = (parseInt(document.getElementById('inv-ore').value)||0) + ((parseInt(document.getElementById('inv-ore-cond').value)||0)*20);
+            const th = parseInt(document.getElementById('craft-target-high').value) || 0; // 燦爛(上位)
+            const tn = parseInt(document.getElementById('craft-target-normal').value) || 0; // 通常
             
-            const results = [ 
-                { n: "時の欠片", r: rs, h: parseInt(document.getElementById('inv-shards').value)||0 }, 
-                { n: "黒オール(換算)", r: ro, h: totalO } 
+            const requiredShards = (th * 1500) + (tn * 300);
+            const requiredOre = (th * 200) + (tn * 20);
+            const requiredCatalyst = (th * 200) + (tn * 20);
+
+            const shardInv = parseInt(document.getElementById('inv-shards').value) || 0;
+            const oreInv = parseInt(document.getElementById('inv-ore').value) || 0;
+            const condOreInv = parseInt(document.getElementById('inv-ore-cond').value) || 0; // 凝縮黒オール
+            const catalystInv = parseInt(document.getElementById('inv-catalyst').value) || 0;
+            const condCatalystInv = parseInt(document.getElementById('inv-catalyst-cond').value) || 0; // 促進剤
+
+            const totalOreStock = oreInv + (condOreInv * 20);
+            const totalCatalystStock = catalystInv + (condCatalystInv * 20);
+
+            const resultsData = [
+                { 
+                    name: "時の欠片", 
+                    required: requiredShards, 
+                    held: shardInv, 
+                    icon: "fa-gem", 
+                    col: "text-indigo-400",
+                    desc: "バッグ内の時の欠片所持数をそのまま参照します。"
+                },
+                { 
+                    name: "黒オール (換算合計)", 
+                    required: requiredOre, 
+                    held: totalOreStock, 
+                    icon: "fa-cubes", 
+                    col: "text-amber-400",
+                    desc: "手持ちの黒オール＋凝縮(1個につき20個分)の合計所持数です。"
+                },
+                { 
+                    name: "錬金術触媒 (換算合計)", 
+                    required: requiredCatalyst, 
+                    held: totalCatalystStock, 
+                    icon: "fa-flask", 
+                    col: "text-teal-400",
+                    desc: "手持ちの錬金術触媒＋促進剤(1個につき20個分)の合計所持数です。"
+                }
             ];
 
-            document.getElementById('craft-results').innerHTML = results.map(i => {
-                const diff = Math.max(0, i.r - i.h);
-                return `<div class="glass-card p-4 flex justify-between items-center border ${diff>0?'border-red-900/40':'border-green-900/40'}">
-                    <span class="text-xs font-bold">${i.n}</span>
-                    <span class="text-lg font-mono font-bold ${diff>0?'text-red-400':'text-green-500'}">${diff>0?'-'+formatNum(diff):'READY'}</span>
-                </div>`;
+            // STEP 3: 必要な合計素材と不足分の出力
+            document.getElementById('craft-results').innerHTML = resultsData.map(item => {
+                const diff = Math.max(0, item.required - item.held);
+                const isReady = diff <= 0;
+                const progressPct = item.required > 0 ? Math.min(100, (item.held / item.required) * 100).toFixed(1) : 100;
+
+                return `
+                    <div class="glass-card p-5 border ${!isReady ? 'border-red-900/25 bg-red-950/5' : 'border-green-900/25 bg-green-950/5'} flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-full bg-slate-900/80 flex items-center justify-center border border-slate-800">
+                                    <i class="fa-solid ${item.icon} ${item.col}"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[11px] text-slate-300 block font-bold tracking-wider">${item.name}</span>
+                                    <span class="text-xs font-mono text-slate-400">必要総数: ${formatNum(item.required)} / 現在所持: ${formatNum(item.held)}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] uppercase tracking-wide px-2.5 py-0.5 rounded-full font-extrabold ${!isReady ? 'bg-red-500/10 text-red-400 border border-red-500/25' : 'bg-green-500/10 text-green-450 border border-green-500/25'}">
+                                    ${!isReady ? '不足' : '完了'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center border-t border-slate-800/40 pt-2.5">
+                            <span class="text-[10px] text-slate-500">${item.desc}</span>
+                            <div class="text-right">
+                                <span class="text-[9px] block text-slate-500 font-bold">集める残り個数</span>
+                                <span class="text-lg font-mono font-black ${!isReady ? 'text-red-400' : 'text-green-450'}">
+                                    ${!isReady ? formatNum(diff) : '0 (過不足なし)'}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-1 mt-1">
+                            <div class="flex justify-between text-[9px] text-slate-500">
+                                <span>集まり具合</span>
+                                <span class="font-mono">${progressPct}%</span>
+                            </div>
+                            <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                                <div class="${!isReady ? 'bg-amber-500' : 'bg-green-500'}" style="width: ${progressPct}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }).join('');
         }
 
-        // === HIDDEN JOBS MODULE ===
-        function initHiddenJobModule() {
+        // レシピ切り替え表示制御用
+        function switchCraftRecipe() {
+            const recipe = document.getElementById('craft-recipe-select').value;
+            if (recipe === 'life-core') {
+                document.getElementById('recipe-view-life-core').classList.remove('hidden');
+                document.getElementById('recipe-view-future').classList.add('hidden');
+                document.getElementById('craft-title').innerText = "製作素材シミュレーター (生命の核)";
+                document.getElementById('craft-subtitle').innerText = "乗り物・装備の製作に必要な「時の欠片」「黒オール」「錬金術触媒」の必要数を算出します。";
+                calculate();
+            } else {
+                document.getElementById('recipe-view-life-core').classList.add('hidden');
+                document.getElementById('recipe-view-future').classList.remove('hidden');
+                document.getElementById('craft-title').innerText = "製作素材シミュレーター (今後のレシピ)";
+                document.getElementById('craft-subtitle').innerText = "今後追加される新規レシピの表示用プレースホルダーです。";
+            }
+            saveLocal();
+        }
+
+        // === HIDDEN JOBS & ABILITIES MASTER ===
+        function initHiddenJob() {
             renderJobButtons();
             renderJobDetails();
             renderAbilitiesSelector();
         }
 
-        // 職業切り替えボタンの描画
+        // 隠し職業ボタン描画
         function renderJobButtons() {
             const container = document.getElementById('job-buttons-container');
-            container.innerHTML = HIDDEN_JOBS.map(job => {
+            container.innerHTML = JOBS.map(job => {
+                const matchedCount = job.req.filter(ability => selectedAbilities.includes(ability)).length;
                 const isSelected = activeJobName === job.name;
-                const matchedCount = job.tags.filter(tag => selectedAbilities.includes(tag)).length;
-                const isUnlocked = matchedCount >= 6;
-
-                const borderClass = isSelected ? 'border-amber-500 bg-amber-500/10 text-amber-300' : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700';
-                const countBadgeClass = isUnlocked ? 'bg-amber-550/20 text-amber-400 border-amber-500/30 badge-glow font-black' : 'bg-slate-900/80 text-slate-500 border border-slate-900';
+                const pct = ((matchedCount / 6) * 100).toFixed(0);
 
                 return `
-                    <button onclick="selectJob('${job.name}')" class="flex items-center justify-between px-3.5 py-3 rounded-xl border text-left transition-all ${borderClass}">
-                        <span class="text-xs font-bold truncate pr-1">${job.name}</span>
-                        <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded flex items-center justify-center min-w-[32px] ${countBadgeClass}">
-                            ${matchedCount}/6
-                        </span>
+                    <button onclick="selectJob('${job.name}')" class="flex flex-col p-3.5 rounded-xl border text-left transition-all w-full relative overflow-hidden ${isSelected ? 'border-[#c5a059] bg-[#c5a059]/10 text-white shadow-md' : 'border-slate-800 text-slate-400 hover:border-slate-700 hover:bg-slate-900/10'}">
+                        <div class="flex items-center justify-between w-full mb-1">
+                            <div>
+                                <div class="text-xs font-extrabold ${isSelected ? 'text-gold-light' : 'text-slate-200'}">${job.name}</div>
+                            </div>
+                            <span class="text-xs font-mono font-bold ${matchedCount === 6 ? 'text-gold' : 'text-slate-400'}">${matchedCount}/6</span>
+                        </div>
+                        
+                        <div class="w-full bg-slate-950 h-1 rounded-full overflow-hidden mt-1.5">
+                            <div class="${matchedCount === 6 ? 'bg-gold badge-glow' : 'bg-gold-dark/40'}" style="width: ${pct}%"></div>
+                        </div>
                     </button>
                 `;
             }).join('');
         }
 
-        function selectJob(name) {
-            activeJobName = name;
+        function selectJob(n) {
+            activeJobName = n;
             renderJobButtons();
             renderJobDetails();
             saveLocal();
         }
 
-        // 選択中の隠し職業詳細
+        // 職業詳細描画 (解放必須アビリティの系統名バッジを常に横へ表示して視認性を強化)
         function renderJobDetails() {
-            const job = HIDDEN_JOBS.find(j => j.name === activeJobName);
-            const container = document.getElementById('job-detail-card');
-            if(!job) return;
+            const job = JOBS.find(j => j.name === activeJobName);
+            if (!job) return;
+            const matchedCount = job.req.filter(t => selectedAbilities.includes(t)).length;
 
-            const matchedCount = job.tags.filter(tag => selectedAbilities.includes(tag)).length;
-            const isUnlocked = matchedCount >= 6;
+            const reqListHTML = job.req.map(reqAbility => {
+                const isActive = selectedAbilities.includes(reqAbility);
+                const abilityObj = ABILITIES.find(a => a.name === reqAbility);
+                const descText = abilityObj ? abilityObj.desc : "";
 
-            // アビリティペアの要素生成
-            const pairsHTML = job.abilityPairs.map(pair => {
-                const isLeftActive = selectedAbilities.includes(pair.left);
-                const isRightActive = selectedAbilities.includes(pair.right);
-
-                const leftAb = ABILITIES.find(a => a.name === pair.left);
-                const rightAb = ABILITIES.find(a => a.name === pair.right);
-
-                const leftCategory = leftAb ? CATEGORY_MAP[leftAb.catId] : (pair.left === "活力" ? CATEGORY_MAP[7] : CATEGORY_MAP[8]);
-                const rightCategory = rightAb ? CATEGORY_MAP[rightAb.catId] : (pair.right === "活力" ? CATEGORY_MAP[7] : CATEGORY_MAP[8]);
-
-                const leftStyle = isLeftActive ? 'bg-slate-900 border-amber-500/40 text-amber-300 font-extrabold' : 'bg-slate-950/50 border-transparent text-slate-600 line-through';
-                const rightStyle = isRightActive ? 'bg-slate-900 border-amber-500/40 text-amber-300 font-extrabold' : 'bg-slate-950/50 border-transparent text-slate-600 line-through';
+                // アビリティが所属する系統カテゴリを判定して、枠の色と「系統名」をバッジとして取得
+                const catObj = abilityObj ? CATEGORIES[abilityObj.cat] : null;
+                const catName = catObj ? catObj.name : "不明";
+                const catColorClass = catObj ? catObj.color : "text-slate-400";
+                
+                let activeClasses = 'bg-[#c5a059]/15 border-[#c5a059]/40 text-white';
+                let iconStyle = '';
+                
+                if (isActive && catObj) {
+                    activeClasses = `${catObj.activeBg} ${catObj.activeBorder} ${catObj.activeText}`;
+                    iconStyle = `color: ${catObj.color.replace('text-', '')};`;
+                }
 
                 return `
-                    <div class="bg-slate-950/80 border border-slate-850 rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-inner">
-                        <div class="flex-1 p-2 rounded-lg border text-center transition-all ${leftStyle}">
-                            <div class="text-[11px] truncate">${pair.left}</div>
-                            <span class="text-[8px] block opacity-60 mt-0.5">${leftCategory ? leftCategory.name : '系統不明'}</span>
-                        </div>
-                        <div class="text-slate-600 font-black text-xs">＋</div>
-                        <div class="flex-1 p-2 rounded-lg border text-center transition-all ${rightStyle}">
-                            <div class="text-[11px] truncate">${pair.right}</div>
-                            <span class="text-[8px] block opacity-60 mt-0.5">${rightCategory ? rightCategory.name : '系統不明'}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // レベルボーナス
-            const levelsHTML = Object.entries(job.levels).map(([level, effect]) => {
-                const isLvl1 = parseInt(level) === 1;
-                const borderClass = isLvl1 ? 'bg-amber-500/5 border-amber-500/20' : 'bg-slate-950/40 border-slate-900';
-                return `
-                    <div class="p-2.5 rounded-lg border text-[10px] ${borderClass}">
-                        <div class="font-extrabold text-amber-400 mb-0.5 font-mono">LV ${level}</div>
-                        <p class="text-slate-300 leading-relaxed font-medium">${effect}</p>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = `
-                <div class="border-b border-slate-800 pb-4">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <h3 class="text-lg font-black text-amber-400 flex items-center gap-2">
-                                    <i class="fa-solid fa-book-bookmark text-amber-500"></i>
-                                    ${job.name}
-                                </h3>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-950 border border-slate-800 text-slate-400">
-                                    隠し職業詳細
+                    <div class="p-3 rounded-xl border flex flex-col gap-1.5 transition-all ${isActive ? activeClasses + ' font-medium' : 'bg-slate-950/40 border-slate-800 text-slate-500'}">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-xs font-bold truncate ${isActive ? 'text-white' : 'text-slate-350'}">${reqAbility}</span>
+                                <span class="text-[8px] px-1 py-0.25 rounded bg-slate-950/80 border border-slate-800/60 ${catColorClass} font-black leading-none scale-90 origin-left shrink-0">
+                                    ${catName}
                                 </span>
                             </div>
-                            <p class="text-[11px] text-slate-300 leading-relaxed font-medium">
-                                ${job.description}
-                            </p>
+                            <i class="fa-solid ${isActive ? 'fa-circle-check font-bold' : 'fa-circle-notch text-slate-600'} text-xs shrink-0" ${isActive && iconStyle ? `style="${iconStyle}"` : ''}></i>
                         </div>
-                        <button onclick="applyJobAbilities('${job.name}')" class="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 hover:from-amber-400 hover:to-orange-400 transition-all shadow">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
-                            条件を全適用
-                        </button>
+                        <p class="text-[9px] leading-relaxed text-slate-400 line-clamp-2">${descText}</p>
                     </div>
+                `;
+            }).join('');
 
-                    <div class="mt-4 bg-slate-950/60 border border-slate-850 p-2.5 rounded-xl flex items-center justify-between">
-                        <span class="text-[10px] font-bold text-slate-400">現在の条件一致度:</span>
-                        <span class="text-xs font-black text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded border border-amber-500/20">
-                            ${matchedCount} / 6
-                        </span>
+            // === 隠し職業レベルに応じたステータスアップ表示 ===
+            const currentLv = parseInt(document.getElementById('input-lv').value) || 50;
+            const milestones = [1, 100, 200, 300, 400, 500, 600, 700];
+            const milestoneLabels = {
+                1: "初期解放効果",
+                100: "Lv.100 特性",
+                200: "Lv.200 特性",
+                300: "Lv.300 特性",
+                400: "Lv.400 特性",
+                500: "Lv.500 特性",
+                600: "Lv.600 特性",
+                700: "Lv.700 特性"
+            };
+
+            const levelSpecsHTML = milestones.map(ms => {
+                const isActivated = currentLv >= ms || ms === 1;
+                const effectText = job.abilities[ms] || "未判明・未実装の効果";
+
+                return `
+                    <div class="p-3 rounded-xl border flex gap-3 transition-all duration-300 ${isActivated ? 'bg-emerald-950/15 border-emerald-500/40 text-slate-200' : 'bg-slate-950/20 border-slate-900 text-slate-600'}">
+                        <div class="flex flex-col items-center justify-center min-w-[70px] border-r ${isActivated ? 'border-emerald-500/25' : 'border-slate-850'} pr-3">
+                            <span class="text-[9px] font-extrabold ${isActivated ? 'text-emerald-400' : 'text-slate-550'} leading-none">${milestoneLabels[ms]}</span>
+                            <span class="text-xs font-mono font-bold mt-1 ${isActivated ? 'text-white' : 'text-slate-500'}">${ms === 1 ? '初期' : 'Lv.' + ms}</span>
+                        </div>
+                        <div class="flex-1 flex items-center justify-between gap-3">
+                            <p class="text-[11px] leading-normal ${isActivated ? 'text-slate-250' : 'text-slate-550'}">${effectText}</p>
+                            <div class="shrink-0">
+                                <i class="fa-solid ${isActivated ? 'fa-shield-halved text-emerald-400' : 'fa-lock text-slate-800'} text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('job-detail-card').innerHTML = `
+                <div class="flex justify-between items-start mb-4 border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="text-lg font-black text-gold flex items-center gap-1.5">
+                            <i class="fa-solid fa-crown text-xs"></i> ${job.name}
+                        </h3>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">構成一致度</div>
+                        <div class="text-2xl font-mono font-black ${matchedCount === 6 ? 'text-gold badge-glow' : 'text-slate-350'}">${matchedCount} / 6</div>
                     </div>
                 </div>
+                
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1">
+                    <i class="fa-solid fa-puzzle-piece text-gold"></i> 解放必須アビリティ (適合チェック)
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">${reqListHTML}</div>
+                
+                <button onclick="applyJobAbilities('${job.name}')" class="w-full py-3 rounded-xl bg-gold text-slate-950 hover:bg-gold-light font-black text-xs transition-transform active:scale-95 shadow-lg flex items-center justify-center gap-2 mb-6">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> 必須アビリティ（6個）をワンクリック一括適用
+                </button>
 
-                <div>
-                    <h4 class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                        <i class="fa-solid fa-award text-amber-500"></i>
-                        解放アビリティ・ペアの状況
-                    </h4>
-                    <div class="space-y-2">
-                        ${pairsHTML}
+                <!-- マスタリー特性・覚醒ステータスリスト -->
+                <div class="border-t border-slate-850 pt-5 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-[10px] font-bold text-slate-455 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-nodes text-emerald-500"></i> レベル特性・マスタリー覚醒ステータス
+                        </h4>
+                        <span class="text-[9px] text-slate-500 font-mono">現在マスタリーLv: <span class="text-gold font-bold">${currentLv}</span></span>
                     </div>
-                </div>
-
-                <div class="pt-3 border-t border-slate-800 space-y-2">
-                    <h4 class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                        <i class="fa-solid fa-sparkles text-amber-500"></i>
-                        レベル特性＆能力バフ効果
-                    </h4>
-                    <div class="space-y-1.5">
-                        ${levelsHTML}
+                    <div class="grid grid-cols-1 gap-2.5 max-h-[350px] overflow-y-auto pr-1">
+                        ${levelSpecsHTML}
                     </div>
                 </div>
             `;
         }
 
-        // アビリティ全適用
-        function applyJobAbilities(jobName) {
-            const job = HIDDEN_JOBS.find(j => j.name === jobName);
-            if(!job) return;
-            selectedAbilities = [...job.tags];
-            renderJobButtons();
-            renderJobDetails();
-            renderAbilitiesSelector();
-            saveLocal(true); // 強制保存表示
-        }
-
-        // アビリティ選択リストの描画
+        // アビリティ盤面描画 (「系統」削除、カラー完全カスタマイズ＆選択時の色連動)
         function renderAbilitiesSelector() {
-            const grid = document.getElementById('abilities-categories-grid');
-            
-            // 各アビリティが何個の隠し職業から要求されているか計算
-            const requestCounts = {};
+            const grid = document.getElementById('abilities-grid');
+            const searchVal = document.getElementById('ability-search').value.toLowerCase().trim();
+
+            const reqCounts = {};
             ABILITIES.forEach(ab => {
-                requestCounts[ab.name] = HIDDEN_JOBS.filter(job => job.tags.includes(ab.name)).length;
+                reqCounts[ab.name] = JOBS.filter(job => job.req.includes(ab.name)).length;
             });
 
-            // 系統別にグループ化
-            const categories = {};
-            Object.keys(CATEGORY_MAP).forEach(catId => {
-                categories[catId] = ABILITIES.filter(ab => ab.catId === parseInt(catId));
-            });
+            grid.innerHTML = Object.entries(CATEGORIES).map(([id, cat]) => {
+                const list = ABILITIES.filter(a => a.cat == id);
+                const filteredList = list.filter(a => a.name.toLowerCase().includes(searchVal));
+                
+                if (searchVal && filteredList.length === 0) {
+                    return ''; 
+                }
 
-            grid.innerHTML = Object.entries(categories).map(([catId, list]) => {
-                const cat = CATEGORY_MAP[catId];
-                const isExpanded = categoryExpanded[catId];
+                const exp = categoryExpanded[id];
                 const selectedInCat = list.filter(ab => selectedAbilities.includes(ab.name)).length;
 
-                const accordionIcon = isExpanded ? 'fa-chevron-up' : 'fa-chevron-down';
-                const collapseClass = isExpanded ? 'block' : 'hidden';
-
-                const buttonsHTML = list.map(ab => {
-                    const isSelected = selectedAbilities.includes(ab.name);
-                    const isRequired = requestCounts[ab.name] > 0;
-
-                    const btnClass = isSelected 
-                        ? 'bg-slate-900/95 border-amber-500/60 text-amber-300 shadow-md shadow-amber-950/10' 
-                        : 'bg-slate-950/40 border-slate-850 hover:border-slate-700 text-slate-400 hover:text-slate-200';
-
-                    const checkHTML = isSelected 
-                        ? '<i class="fa-solid fa-circle-check text-amber-400 text-xs flex-shrink-0"></i>' 
-                        : '<div class="w-3 h-3 rounded-full border border-slate-800 flex-shrink-0"></div>';
-
-                    const reqHTML = isRequired 
-                        ? `<span class="text-slate-500 font-bold font-mono">必要: ${requestCounts[ab.name]}</span>` 
-                        : '';
+                const btns = filteredList.map(a => {
+                    const isSelected = selectedAbilities.includes(a.name);
+                    const neededByJobs = reqCounts[a.name] > 0;
+                    
+                    // 系統カテゴリに合わせた選択時カラー
+                    const activeClasses = `${cat.activeBg} ${cat.activeBorder} ${cat.activeText}`;
 
                     return `
-                        <button onclick="toggleAbility('${ab.name}')" class="group flex flex-col justify-between p-2.5 rounded-xl border text-left transition-all duration-150 ${btnClass}">
-                            <div class="flex items-start justify-between w-full gap-1 mb-1.5">
-                                <span class="text-[11px] font-extrabold truncate pr-1">${ab.name}</span>
-                                ${checkHTML}
-                            </div>
-                            <div class="flex items-center justify-between w-full text-[8px] opacity-70">
-                                <span class="px-1 py-0.25 rounded ${cat.text} bg-slate-900/60 font-semibold">${cat.name}</span>
-                                ${reqHTML}
-                            </div>
-                        </button>
+                        <div class="relative">
+                            <button onclick="toggleAbility('${a.name}')" class="w-full p-2.5 rounded-xl border text-[11px] text-left transition-all ${isSelected ? activeClasses + ' font-bold shadow-sm' : 'border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300'} flex flex-col justify-between h-14">
+                                <span class="truncate block w-full mb-1">${a.name}</span>
+                                <div class="flex justify-between items-center w-full">
+                                    ${neededByJobs ? `<span class="text-[8px] opacity-40 font-mono">要求: ${reqCounts[a.name]}種</span>` : '<span class="text-[8px] opacity-20 font-mono">要求なし</span>'}
+                                </div>
+                            </button>
+                        </div>
                     `;
                 }).join('');
 
                 return `
-                    <div class="bg-slate-900/40 border border-slate-850 rounded-2xl overflow-hidden shadow-md flex flex-col justify-between">
-                        <!-- カテゴリヘッダー -->
-                        <div onclick="toggleCategoryCollapse(${catId})" class="bg-slate-900/50 px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-900/80 border-b border-slate-800/30">
-                            <div class="flex items-center gap-2.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-gradient-to-r ${cat.color} shadow-md"></span>
-                                <span class="text-xs font-black tracking-wider text-slate-200">${cat.name}</span>
-                                <span class="text-[10px] text-slate-500 font-mono">(${list.length}種類)</span>
-                            </div>
+                    <div class="glass-card border border-slate-850 rounded-xl relative">
+                        <div onclick="toggleCat(${id})" class="bg-slate-900/40 p-3 flex justify-between items-center cursor-pointer border-b border-slate-850 rounded-t-xl">
                             <div class="flex items-center gap-2">
-                                ${selectedInCat > 0 ? `<span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-mono">${selectedInCat}</span>` : ''}
-                                <i class="fa-solid ${accordionIcon} text-slate-400 text-xs"></i>
+                                <span class="w-2.5 h-2.5 rounded-full ${cat.bg} border ${cat.border}"></span>
+                                <div>
+                                    <span class="text-[11px] font-extrabold ${cat.color} block">${cat.name}</span>
+                                    <span class="text-[7px] text-slate-500 block leading-none font-light">${cat.label}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                ${selectedInCat > 0 ? `<span class="text-[9px] font-bold bg-gold text-slate-950 px-1.5 py-0.25 rounded font-mono">${selectedInCat}</span>` : ''}
+                                <i class="fa-solid ${exp ? 'fa-chevron-up' : 'fa-chevron-down'} text-[9px] text-slate-500"></i>
                             </div>
                         </div>
-
-                        <!-- カテゴリアビリティ一覧 -->
-                        <div class="p-3 bg-slate-950/20 ${collapseClass}">
-                            <div class="grid grid-cols-2 gap-2">
-                                ${buttonsHTML}
-                            </div>
-                        </div>
+                        <div class="p-2 grid grid-cols-2 gap-1.5 ${exp ? 'grid' : 'hidden'}">${btns}</div>
                     </div>
                 `;
             }).join('');
-
-            // 上部の選択数バッジ更新
-            document.getElementById('selected-abilities-badge').innerText = `選択中: ${selectedAbilities.length} / ${ABILITIES.length} 個`;
+            
+            document.getElementById('selected-count').innerText = `選択中: ${selectedAbilities.length}`;
         }
 
-        // アビリティのトグル
-        function toggleAbility(name) {
-            const idx = selectedAbilities.indexOf(name);
-            if (idx > -1) {
-                selectedAbilities.splice(idx, 1);
+        function toggleAbility(n) {
+            const index = selectedAbilities.indexOf(n);
+            if (index > -1) {
+                selectedAbilities.splice(index, 1);
             } else {
-                selectedAbilities.push(name);
+                selectedAbilities.push(n);
             }
-            renderJobButtons();
-            renderJobDetails();
-            renderAbilitiesSelector();
-            saveLocal();
+            initHiddenJob();
+            calculate();
         }
 
-        // カテゴリアコーディオンの切り替え
-        function toggleCategoryCollapse(id) {
+        function toggleCat(id) {
             categoryExpanded[id] = !categoryExpanded[id];
             renderAbilitiesSelector();
-            saveLocal(); // 展開・折りたたみ状況も保存
+            saveLocal();
         }
 
-        // アビリティリセット
+        // すべて開く / すべて閉じる
+        function toggleAllCategories(expand) {
+            for (let id in categoryExpanded) {
+                categoryExpanded[id] = expand;
+            }
+            renderAbilitiesSelector();
+            saveLocal();
+        }
+
+        function filterAbilities() {
+            renderAbilitiesSelector();
+        }
+
         function clearSelectedAbilities() {
-            if(confirm("すべてのアビリティ選択を解除しますか？")) {
-                selectedAbilities = [];
-                renderJobButtons();
-                renderJobDetails();
-                renderAbilitiesSelector();
-                saveLocal(true);
+            selectedAbilities = [];
+            initHiddenJob();
+            calculate();
+            showToast('<i class="fa-solid fa-trash"></i>', 'アビリティの全選択を解除しました。');
+        }
+
+        // === BUILD SLOTS ===
+        function saveActiveBuild(slotId) {
+            savedBuilds[slotId] = [...selectedAbilities];
+            saveLocal();
+            showToast('<i class="fa-solid fa-floppy-disk text-green-400"></i>', `アビリティビルド「スロット ${slotId}」に保存完了！`);
+        }
+
+        function loadSavedBuild(slotId) {
+            if(!slotId) return;
+            const target = savedBuilds[slotId];
+            if(!target || target.length === 0) {
+                showToast('<i class="fa-solid fa-xmark text-red-400"></i>', `保存されているビルドデータがありません。`);
+                document.getElementById('load-build-select').value = "";
+                return;
+            }
+            selectedAbilities = [...target];
+            initHiddenJob();
+            calculate();
+            showToast('<i class="fa-solid fa-cloud-arrow-down text-green-400"></i>', `ビルド「スロット ${slotId}」を読み込みました。`);
+            document.getElementById('load-build-select').value = "";
+        }
+
+        // === SIMULATOR SCHEDULES ===
+        function addSimulator() {
+            sims.push({ id: Date.now(), label: "新規の狩場/コンテンツ", hours: 2, expPerMin: 1200000 });
+            renderSims();
+            calculate();
+        }
+
+        // 狩場一覧
+        function renderSims() {
+            document.getElementById('simulators-container').innerHTML = sims.map(s => `
+                <div class="bg-slate-950/50 p-2 rounded-xl flex items-center gap-2 border border-slate-850/60 font-mono">
+                    <input type="text" value="${s.label}" oninput="updateSim(${s.id},'label',this.value)" class="bg-transparent text-[11px] text-slate-300 flex-1 outline-none border-b border-transparent focus:border-gold px-1">
+                    
+                    <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                        <span class="text-[8px] text-slate-500 font-bold uppercase">時間</span>
+                        <input type="number" value="${s.hours}" step="0.5" min="0" max="24" oninput="updateSim(${s.id},'hours',this.value)" class="w-8 bg-transparent text-[10px] text-center text-white outline-none">
+                        <span class="text-[8px] text-slate-500">h</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                        <span class="text-[8px] text-slate-500 font-bold uppercase">分給</span>
+                        <input type="number" value="${s.expPerMin}" step="10000" min="0" oninput="updateSim(${s.id},'expPerMin',this.value)" class="w-20 bg-transparent text-[10px] text-right text-gold outline-none">
+                        <span class="text-[8px] text-slate-500">Exp</span>
+                    </div>
+                    
+                    <button onclick="removeSim(${s.id})" class="text-slate-650 px-1 hover:text-red-400 transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateSim(id, field, value) {
+            const item = sims.find(x => x.id === id);
+            if (item) {
+                item[field] = field === 'label' ? value : parseFloat(value) || 0;
+                calculate();
             }
         }
 
-        // === UTILS / TAB MANAGEMENT ===
+        function removeSim(id) {
+            sims = sims.filter(x => x.id !== id);
+            renderSims();
+            calculate();
+        }
+
+        // === SYSTEM MANAGEMENT ===
         function switchTab(t) {
             activeTab = t;
-            document.getElementById('section-mastery').classList.toggle('hidden', t !== 'mastery');
-            document.getElementById('section-crafting').classList.toggle('hidden', t !== 'crafting');
-            document.getElementById('section-hidden-job').classList.toggle('hidden', t !== 'hidden-job');
+            document.querySelectorAll('[id^="section-"]').forEach(s => s.classList.add('hidden'));
+            document.getElementById('section-' + t).classList.remove('hidden');
             
-            document.getElementById('tab-mastery').classList.toggle('tab-active', t === 'mastery');
-            document.getElementById('tab-mastery').classList.toggle('text-slate-500', t !== 'mastery');
-            document.getElementById('tab-crafting').classList.toggle('tab-active', t === 'crafting');
-            document.getElementById('tab-crafting').classList.toggle('text-slate-500', t !== 'crafting');
-            document.getElementById('tab-hidden-job').classList.toggle('tab-active', t === 'hidden-job');
-            document.getElementById('tab-hidden-job').classList.toggle('text-slate-500', t !== 'hidden-job');
+            document.querySelectorAll('[id^="tab-"]').forEach(b => {
+                b.classList.remove('tab-active');
+                b.classList.add('text-slate-500');
+            });
+            document.getElementById('tab-' + t).classList.add('tab-active');
+            document.getElementById('tab-' + t).classList.remove('text-slate-500');
             
-            // タブの切り替え時も状態を保存
+            // タブ切替時の自動スクロールは防止
             saveLocal();
-            
-            // テーブル表示時に現在LVの位置へスクロール
-            if (t === 'mastery') {
-                scrollToCurrentLevel();
-            }
         }
 
-        // テーブルスクロール処理 (エラー防止のためにtry-catchとsetTimeoutで非同期化)
         function scrollToCurrentLevel() {
             try {
-                const lv = parseInt(document.getElementById('input-lv').value) || 1;
+                const curLvVal = document.getElementById('input-lv').value;
                 setTimeout(() => {
-                    const targetRow = document.getElementById(`row-lv-${lv}`);
-                    if (targetRow) {
-                        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const row = document.getElementById('row-lv-' + curLvVal);
+                    if (row) {
+                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
-                }, 80);
-            } catch (e) {
-                console.warn("Smooth scroll skipped to avoid DOM blocking:", e);
-            }
+                }, 100);
+            } catch(e) {}
         }
 
         // === LOCAL STORAGE SYSTEM ===
-        function saveLocal(forceAlert = false) {
-            const lvVal = parseInt(document.getElementById('input-lv').value);
-            const pctVal = parseFloat(document.getElementById('input-percent').value);
-            const minVal = parseFloat(document.getElementById('input-minexp').value);
-
-            // 空文字やNaN、異常値を完全にフィルタリングして保存
+        function saveLocal() {
             const data = {
-                lv: isNaN(lvVal) ? 50 : lvVal,
-                pct: isNaN(pctVal) ? 0 : pctVal,
-                min: isNaN(minVal) ? 1000000 : minVal,
+                lv: document.getElementById('input-lv').value,
+                targetLv: document.getElementById('input-target-lv').value,
+                pct: document.getElementById('input-percent').value,
+                min: document.getElementById('input-minexp').value,
                 sims: sims,
                 craft: {
-                    th: parseInt(document.getElementById('craft-target-high').value) || 0,
-                    tn: parseInt(document.getElementById('craft-target-normal').value) || 0,
-                    is: parseInt(document.getElementById('inv-shards').value) || 0,
-                    io: parseInt(document.getElementById('inv-ore').value) || 0,
-                    ic: parseInt(document.getElementById('inv-ore-cond').value) || 0
+                    th: document.getElementById('craft-target-high').value,
+                    tn: document.getElementById('craft-target-normal').value,
+                    is: document.getElementById('inv-shards').value,
+                    io: document.getElementById('inv-ore').value,
+                    ic: document.getElementById('inv-ore-cond').value,
+                    it: document.getElementById('inv-catalyst').value,      // 触媒
+                    ip: document.getElementById('inv-catalyst-cond').value, // 促進剤
+                    recipe: document.getElementById('craft-recipe-select').value // 選択中のレシピ
                 },
                 selectedAbilities: selectedAbilities,
                 activeJobName: activeJobName,
+                activeTab: activeTab,
                 categoryExpanded: categoryExpanded,
-                activeTab: activeTab
+                savedBuilds: savedBuilds,
+                showAllLevels: showAllLevels
             };
+            localStorage.setItem('l9_comprehensive_storage_v9', JSON.stringify(data));
             
-            localStorage.setItem('l9_data_v4', JSON.stringify(data));
-            
-            // 画面右上に「保存済」インジケータを点滅
             const ind = document.getElementById('save-indicator');
             if (ind) {
                 ind.style.opacity = '1';
+                ind.style.transform = 'translateY(0)';
                 if (window.saveTimeout) clearTimeout(window.saveTimeout);
                 window.saveTimeout = setTimeout(() => {
                     ind.style.opacity = '0';
+                    ind.style.transform = 'translateY(4px)';
                 }, 1000);
             }
         }
 
         function loadLocal() {
-            const raw = localStorage.getItem('l9_data_v4');
-            if(!raw) {
-                // 初回読み込み時のデフォルト値設定
-                document.getElementById('input-lv').value = 50;
-                document.getElementById('input-percent').value = 0;
-                document.getElementById('input-minexp').value = 1000000;
-                document.getElementById('craft-target-high').value = 0;
-                document.getElementById('craft-target-normal').value = 0;
-                document.getElementById('inv-shards').value = 0;
-                document.getElementById('inv-ore').value = 0;
-                document.getElementById('inv-ore-cond').value = 0;
-                sims = [];
-                selectedAbilities = [];
-                activeJobName = "剣聖";
-                activeTab = "mastery";
-                categoryExpanded = { 1:true, 2:true, 3:true, 4:true, 5:true, 6:true, 7:true, 8:true };
+            const raw = localStorage.getItem('l9_comprehensive_storage_v9');
+            if (!raw) {
+                sims = [
+                    { id: 1, label: "黄昏の戦場 (一般)", hours: 8, expPerMin: 1500000 },
+                    { id: 2, label: "ボスダンジョン・日課", hours: 2, expPerMin: 3000000 }
+                ];
                 return;
             }
-            
             try {
                 const d = JSON.parse(raw);
-                document.getElementById('input-lv').value = (d.lv !== undefined && d.lv !== "") ? d.lv : 50;
-                document.getElementById('input-percent').value = (d.pct !== undefined && d.pct !== "") ? d.pct : 0;
-                document.getElementById('input-minexp').value = (d.min !== undefined && d.min !== "") ? d.min : 1000000;
-                sims = d.sims || [];
+                document.getElementById('input-lv').value = d.lv || 50;
+                document.getElementById('input-target-lv').value = d.targetLv || 60;
+                document.getElementById('input-percent').value = d.pct || 0;
+                document.getElementById('input-minexp').value = d.min || 1000000;
                 
-                if(d.craft) {
-                    document.getElementById('craft-target-high').value = d.craft.th !== undefined ? d.craft.th : 0;
-                    document.getElementById('craft-target-normal').value = d.craft.tn !== undefined ? d.craft.tn : 0;
-                    document.getElementById('inv-shards').value = d.craft.is !== undefined ? d.craft.is : 0;
-                    document.getElementById('inv-ore').value = d.craft.io !== undefined ? d.craft.io : 0;
-                    document.getElementById('inv-ore-cond').value = d.craft.ic !== undefined ? d.craft.ic : 0;
-                } else {
-                    document.getElementById('craft-target-high').value = 0;
-                    document.getElementById('craft-target-normal').value = 0;
-                    document.getElementById('inv-shards').value = 0;
-                    document.getElementById('inv-ore').value = 0;
-                    document.getElementById('inv-ore-cond').value = 0;
-                }
-
-                // 隠し職業データロード
+                sims = d.sims || [];
                 selectedAbilities = d.selectedAbilities || [];
                 activeJobName = d.activeJobName || "剣聖";
-                categoryExpanded = d.categoryExpanded || { 1:true, 2:true, 3:true, 4:true, 5:true, 6:true, 7:true, 8:true };
                 activeTab = d.activeTab || "mastery";
+                categoryExpanded = d.categoryExpanded || categoryExpanded;
+                savedBuilds = d.savedBuilds || { 1: [], 2: [], 3: [] };
+                showAllLevels = d.showAllLevels !== undefined ? d.showAllLevels : false;
+                
+                const btn = document.getElementById('btn-table-mode');
+                if (btn) {
+                    if (showAllLevels) {
+                        btn.innerHTML = `<i class="fa-solid fa-expand"></i> 全レベル表示中`;
+                        btn.classList.remove('bg-gold/10', 'text-gold');
+                        btn.classList.add('bg-green-500/10', 'text-green-400', 'border-green-500/30');
+                    } else {
+                        btn.innerHTML = `<i class="fa-solid fa-compress"></i> 簡易表示中 (前後10Lv)`;
+                        btn.classList.add('bg-gold/10', 'text-gold');
+                        btn.classList.remove('bg-green-500/10', 'text-green-400', 'border-green-500/30');
+                    }
+                }
 
-                renderSims();
-            } catch(e) {
-                console.error("データの破損を検知しました。再生成します。", e);
-                localStorage.removeItem('l9_data_v4');
-                location.reload();
+                if (d.craft) {
+                    document.getElementById('craft-target-high').value = d.craft.th || 0;
+                    document.getElementById('craft-target-normal').value = d.craft.tn || 0;
+                    document.getElementById('inv-shards').value = d.craft.is || 0;
+                    document.getElementById('inv-ore').value = d.craft.io || 0;
+                    document.getElementById('inv-ore-cond').value = d.craft.ic || 0;
+                    document.getElementById('inv-catalyst').value = d.craft.it || 0;       // 触媒
+                    document.getElementById('inv-catalyst-cond').value = d.craft.ip || 0;  // 促進剤
+                    document.getElementById('craft-recipe-select').value = d.craft.recipe || "life-core";
+                }
+            } catch (e) {
+                console.error("Storage corrupted. Re-init system.");
             }
         }
 
-        function resetData() { 
-            if(confirm("すべてのマスタリー・製作状況・隠し職業を含む保存データを完全リセットしますか？")) { 
-                localStorage.removeItem('l9_data_v4'); 
-                location.reload(); 
-            } 
+        function resetData() {
+            localStorage.removeItem('l9_comprehensive_storage_v9');
+            location.reload();
         }
 
-        // === ENTRY POINT ===
+        function formatNum(n) {
+            return Math.round(n).toLocaleString('en-US');
+        }
+
+        // === ENTRY ===
         window.onload = () => {
             loadLocal();
-            initHiddenJobModule();
+            renderSims();
+            initHiddenJob();
+            switchCraftRecipe(); // 初期ロード時にレシピの選択ビューを正確に切り替え
             calculate();
-            
-            // 初回のタブ表示設定
             switchTab(activeTab);
 
-            // イベントリスナーの設置（入力と自動保存のバインド）
-            const formInputs = [
-                'input-lv', 'input-percent', 'input-minexp', 
+            const inputIDs = [
+                'input-lv', 'input-target-lv', 'input-percent', 'input-minexp', 
                 'craft-target-high', 'craft-target-normal', 
-                'inv-shards', 'inv-ore', 'inv-ore-cond'
+                'inv-shards', 'inv-ore', 'inv-ore-cond',
+                'inv-catalyst', 'inv-catalyst-cond'
             ];
-            formInputs.forEach(id => {
+            inputIDs.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
-                    el.addEventListener('input', () => {
-                        calculate();
-                    });
+                    el.addEventListener('input', calculate);
                 }
             });
         };
