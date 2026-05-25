@@ -123,7 +123,7 @@
             </div>
         </header>
 
-        <!-- MAIN TABS (経験値・製作・職業に完全統一) -->
+        <!-- MAIN TABS (ご指定のタブ表記に変更 ＋ 会心タブ追加) -->
         <div class="flex justify-center space-x-2 md:space-x-8 mb-8 border-b border-slate-800 text-xs md:text-base">
             <button onclick="switchTab('mastery')" id="tab-mastery" class="pb-3 px-3 md:px-6 tab-active font-bold transition-all flex items-center gap-2">
                 <i class="fa-solid fa-scroll text-[11px]"></i>経験値
@@ -133,6 +133,9 @@
             </button>
             <button onclick="switchTab('hidden-job')" id="tab-hidden-job" class="pb-3 px-3 md:px-6 text-slate-500 font-bold transition-all flex items-center gap-2">
                 <i class="fa-solid fa-shield-halved text-[11px]"></i>職業
+            </button>
+            <button onclick="switchTab('crit')" id="tab-crit" class="pb-3 px-3 md:px-6 text-slate-500 font-bold transition-all flex items-center gap-2">
+                <i class="fa-solid fa-fire text-[11px]"></i>会心
             </button>
         </div>
 
@@ -504,6 +507,413 @@
             </div>
         </div>
 
+        <!-- ==============================================
+             SECTION 4: CRITICAL THEORY (会心)
+             ============================================== -->
+        <div id="section-crit" class="hidden space-y-6">
+            
+            <!-- 会心検証シナリオの即時再現プリセット -->
+            <div class="glass-card p-4 flex flex-col md:flex-row items-center justify-between gap-3 border-l-4 border-amber-500">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                    <span class="text-xs font-bold text-slate-200">検証シナリオの即時再現プリセット:</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 w-full md:w-auto">
+                    <button onclick="applyCritScenarioPreset('level-120')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/50 text-slate-300 hover:text-amber-400 transition-all text-left sm:text-center">
+                        🔴 格上Lv120検証 (Lv95・会心760)
+                    </button>
+                    <button onclick="applyCritScenarioPreset('level-60')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/50 text-slate-300 hover:text-emerald-400 transition-all text-left sm:text-center">
+                        🟢 格下Lv60検証 (Lv95・会心760)
+                    </button>
+                    <button onclick="applyCritScenarioPreset('crit-2400')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 text-slate-300 hover:text-indigo-400 transition-all text-left sm:text-center">
+                        ⚡ 会心2400の壁検証 (Lv95同士)
+                    </button>
+                    <button onclick="applyCritScenarioPreset('resist-test')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-pink-500/50 text-slate-300 hover:text-pink-400 transition-all text-left sm:text-center">
+                        🛡️ 敵抵抗150・Lv差5検証
+                    </button>
+                </div>
+            </div>
+
+            <!-- 会心サブセクションナビゲーション -->
+            <div class="flex justify-start space-x-2 border-b border-slate-900 pb-3">
+                <button onclick="switchCritSubSection('simulator')" id="btn-crit-sub-simulator" class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-orange-950/30">
+                    <i class="fa-solid fa-calculator mr-1.5"></i>計算シミュレータ
+                </button>
+                <button onclick="switchCritSubSection('table')" id="btn-crit-sub-table" class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-chart-line mr-1.5"></i>基礎早見表
+                </button>
+                <button onclick="switchCritSubSection('notes')" id="btn-crit-sub-notes" class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-book-open mr-1.5"></i>考察＆解説
+                </button>
+            </div>
+
+            <!-- SUB Tab 1: 計算シミュレータ -->
+            <div id="crit-sub-simulator" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Controls -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="glass-card p-5 space-y-5">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                            <h3 class="text-xs md:text-sm font-black text-slate-200 uppercase flex items-center gap-1.5">
+                                <i class="fa-solid fa-sliders text-amber-500"></i> 1. ステータス・条件パラメータ
+                            </h3>
+                            <span class="text-[9px] text-slate-500 font-mono">Live Simulation</span>
+                        </div>
+
+                        <!-- 自分の基本会心 -->
+                        <div class="p-3 bg-slate-950/40 rounded-xl border border-slate-800/60 hover:border-slate-850 transition-all">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-bold text-slate-350 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 自分の基本会心値
+                                </label>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="adjustCritVal('input-my-crit', -10)" class="p-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                    <input type="number" id="input-my-crit" value="500" min="0" max="3000" oninput="syncCritValue('input-my-crit', 'range-my-crit')" class="w-16 md:w-20 px-2 py-0.5 text-right text-xs rounded bg-slate-950 border border-slate-800 text-amber-400 font-bold font-mono">
+                                    <button onclick="adjustCritVal('input-my-crit', 10)" class="p-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[9px] font-mono text-slate-600">0</span>
+                                <input type="range" id="range-my-crit" min="0" max="3000" step="10" value="500" oninput="syncCritValue('range-my-crit', 'input-my-crit')" class="flex-1 accent-amber-500 cursor-pointer h-1.5 rounded-lg bg-slate-800">
+                                <span class="text-[9px] font-mono text-slate-600">3k</span>
+                            </div>
+                        </div>
+
+                        <!-- 各種対応会心 -->
+                        <div class="p-3 bg-slate-950/40 rounded-xl border border-slate-800/60 hover:border-slate-850 transition-all">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-bold text-slate-350 flex flex-col sm:flex-row sm:items-center gap-1">
+                                    <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> 各種対応会心値</span>
+                                    <span class="text-[9px] text-slate-500 font-medium">(近距離・遠距離・魔法会心など)</span>
+                                </label>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="adjustCritVal('input-spec-crit', -10)" class="p-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                    <input type="number" id="input-spec-crit" value="260" min="0" max="2000" oninput="syncCritValue('input-spec-crit', 'range-spec-crit')" class="w-16 md:w-20 px-2 py-0.5 text-right text-xs rounded bg-slate-950 border border-slate-800 text-amber-400 font-bold font-mono">
+                                    <button onclick="adjustCritVal('input-spec-crit', 10)" class="p-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[9px] font-mono text-slate-600">0</span>
+                                <input type="range" id="range-spec-crit" min="0" max="2000" step="10" value="260" oninput="syncCritValue('range-spec-crit', 'input-spec-crit')" class="flex-1 accent-orange-500 cursor-pointer h-1.5 rounded-lg bg-slate-800">
+                                <span class="text-[9px] font-mono text-slate-600">2k</span>
+                            </div>
+                        </div>
+
+                        <!-- 敵の会心抵抗 -->
+                        <div class="p-3 bg-slate-950/40 rounded-xl border border-slate-800/60 hover:border-slate-850 transition-all">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-bold text-slate-350 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> 敵モンスターの会心抵抗
+                                </label>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="adjustCritVal('input-enemy-resist', -10)" class="p-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                    <input type="number" id="input-enemy-resist" value="0" min="0" max="1500" oninput="syncCritValue('input-enemy-resist', 'range-enemy-resist')" class="w-16 md:w-20 px-2 py-0.5 text-right text-xs rounded bg-slate-950 border border-slate-800 text-amber-400 font-bold font-mono">
+                                    <button onclick="adjustCritVal('input-enemy-resist', 10)" class="p-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-[9px] font-mono text-slate-600">0</span>
+                                <input type="range" id="range-enemy-resist" min="0" max="1500" step="10" value="0" oninput="syncCritValue('range-enemy-resist', 'input-enemy-resist')" class="flex-1 accent-rose-500 cursor-pointer h-1.5 rounded-lg bg-slate-800">
+                                <span class="text-[9px] font-mono text-slate-600">1.5k</span>
+                            </div>
+                            <div class="pt-2 border-t border-slate-900 flex flex-wrap gap-1.5 items-center">
+                                <span class="text-[9px] text-slate-500 font-bold">敵の構成プリセット:</span>
+                                <button onclick="applyCritMonsterPreset('scarecrow')" class="px-2 py-0.5 rounded text-[9px] bg-slate-900 border border-slate-800 hover:border-emerald-500/30 text-emerald-400 font-bold transition-all">かかし (Lv60/抵抗0)</button>
+                                <button onclick="applyCritMonsterPreset('mid-boss')" class="px-2 py-0.5 rounded text-[9px] bg-slate-900 border border-slate-800 hover:border-amber-500/30 text-amber-400 font-bold transition-all">中堅ボス (Lv110/抵抗100)</button>
+                                <button onclick="applyCritMonsterPreset('high-boss')" class="px-2 py-0.5 rounded text-[9px] bg-slate-900 border border-slate-800 hover:border-orange-500/30 text-orange-400 font-bold transition-all">高難度ボス (Lv120/抵抗250)</button>
+                            </div>
+                        </div>
+
+                        <!-- プレイヤー/ターゲットレベル -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
+                            <!-- プレイヤーレベル -->
+                            <div class="p-3 bg-slate-950/40 rounded-xl border border-slate-800/60">
+                                <label class="block text-xs font-bold text-slate-350 mb-2">自分のキャラクターレベル</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" id="range-my-level" min="1" max="150" value="95" oninput="syncCritValue('range-my-level', 'input-my-level')" class="flex-1 accent-amber-500 cursor-pointer">
+                                    <input type="number" id="input-my-level" value="95" min="1" max="150" oninput="syncCritValue('input-my-level', 'range-my-level')" class="w-14 px-2 py-1 text-center text-xs rounded bg-slate-950 border border-slate-800 text-amber-400 font-bold focus:outline-none">
+                                </div>
+                            </div>
+                            <!-- 敵レベル -->
+                            <div class="p-3 bg-slate-950/40 rounded-xl border border-slate-800/60">
+                                <label class="block text-xs font-bold text-slate-350 mb-2">ターゲット（敵）のレベル</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="range" id="range-enemy-level" min="1" max="150" value="120" oninput="syncCritValue('range-enemy-level', 'input-enemy-level')" class="flex-1 accent-amber-500 cursor-pointer">
+                                    <input type="number" id="input-enemy-level" value="120" min="1" max="150" oninput="syncCritValue('input-enemy-level', 'range-enemy-level')" class="w-14 px-2 py-1 text-center text-xs rounded bg-slate-950 border border-slate-800 text-amber-400 font-bold focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 計算モデル選択 -->
+                    <div class="glass-card p-5 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <h3 class="text-xs md:text-sm font-black text-slate-200 uppercase flex items-center gap-1.5">
+                                <i class="fa-solid fa-settings text-amber-500"></i> 2. レベル補正計算モデル
+                            </h3>
+                            <select id="select-calc-model" onchange="calculateCrit()" class="bg-slate-900 border border-slate-700 rounded-lg py-1 px-2.5 text-xs text-slate-200 outline-none focus:border-amber-500">
+                                <option value="subtraction">減算パターン (検証最有力)</option>
+                                <option value="multiplication">乗算パターン</option>
+                            </select>
+                        </div>
+
+                        <!-- 補正数式説明 -->
+                        <div id="crit-formula-text" class="bg-slate-950 border border-slate-850 rounded-xl p-4"></div>
+
+                        <!-- デベロッパー用高度設定 -->
+                        <div class="border border-slate-800/80 rounded-xl overflow-hidden">
+                            <button onclick="toggleCritDevSettings()" class="w-full px-4 py-2.5 bg-slate-950/30 hover:bg-slate-950/60 flex items-center justify-between text-xs font-bold text-slate-400 transition-all">
+                                <span class="flex items-center gap-1.5 font-mono">⚙️ 【数式検証・微調整】係数をカスタムチューニング</span>
+                                <i id="crit-dev-arrow" class="fa-solid fa-chevron-right text-slate-500 transition-transform duration-200"></i>
+                            </button>
+                            <div id="crit-dev-panel" class="hidden p-4 bg-slate-950/60 border-t border-slate-850 space-y-4">
+                                <p class="text-[10px] text-slate-450 leading-relaxed">
+                                    アップデートによる仕様変更の検証用に、基礎計算係数をダイレクトに任意変更テストできます。
+                                </p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-350 mb-1">
+                                            1%上昇に必要な会心値 (初期値: 30)
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="range" id="range-crit-increment" min="10" max="100" value="30" oninput="syncCritValue('range-crit-increment', 'input-crit-increment')" class="flex-1 accent-indigo-500">
+                                            <input type="number" id="input-crit-increment" value="30" min="1" max="100" oninput="syncCritValue('input-crit-increment', 'range-crit-increment')" class="w-12 text-center text-[10px] font-bold py-0.5 rounded bg-slate-950 text-indigo-400 border border-slate-800">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-350 mb-1">
+                                            減算補正：1Lvあたりの減衰率(%) (初期値: 1.5%)
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="range" id="range-penalty-rate" min="0.5" max="5.0" step="0.1" value="1.5" oninput="syncCritValue('range-penalty-rate', 'input-penalty-rate')" class="flex-1 accent-indigo-500">
+                                            <input type="number" id="input-penalty-rate" step="0.1" value="1.5" min="0.1" max="5.0" oninput="syncCritValue('input-penalty-rate', 'range-penalty-rate')" class="w-12 text-center text-[10px] font-bold py-0.5 rounded bg-slate-950 text-indigo-400 border border-slate-800">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: SVG Graph & Live Stats -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- SVG Graph Box -->
+                    <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm shadow-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-[10px] font-extrabold text-amber-500 uppercase tracking-wider">会心率上昇シミュレーション曲線</h4>
+                            <span class="text-[9px] text-slate-500 font-bold">X軸:会心 / Y軸:会心率</span>
+                        </div>
+                        <div class="bg-slate-950/80 border border-slate-850 rounded-xl p-2 relative">
+                            <svg viewBox="0 0 500 200" class="w-full h-auto overflow-visible select-none">
+                                <!-- Grid lines -->
+                                <line x1="0" y1="166.6" x2="500" y2="166.6" stroke="#1e293b" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="0" y1="133.3" x2="500" y2="133.3" stroke="#1e293b" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="0" y1="100" x2="500" y2="100" stroke="#1e293b" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="0" y1="66.6" x2="500" y2="66.6" stroke="#1e293b" stroke-width="1" stroke-dasharray="3,3" />
+                                <line x1="0" y1="33.3" x2="500" y2="33.3" stroke="#1e293b" stroke-width="1" stroke-dasharray="3,3" />
+
+                                <!-- Milestone X line (2400) -->
+                                <line x1="400" y1="0" x2="400" y2="200" stroke="#312e81" stroke-width="1.5" stroke-dasharray="4,4" />
+                                
+                                <!-- Y Axis labels -->
+                                <text x="5" y="195" fill="#475569" font-size="8" font-weight="bold">0%</text>
+                                <text x="5" y="162" fill="#475569" font-size="8" font-weight="bold">20%</text>
+                                <text x="5" y="128" fill="#475569" font-size="8" font-weight="bold">40%</text>
+                                <text x="5" y="95" fill="#475569" font-size="8" font-weight="bold">60%</text>
+                                <text x="5" y="62" fill="#475569" font-size="8" font-weight="bold">80%</text>
+                                <text x="5" y="28" fill="#475569" font-size="8" font-weight="bold">100%</text>
+
+                                <!-- X Axis labels -->
+                                <text x="5" y="185" fill="#475569" font-size="8" font-weight="bold">会心0</text>
+                                <text x="240" y="185" fill="#475569" font-size="8" font-weight="bold">1500</text>
+                                <text x="385" y="15" fill="#4f46e5" font-size="8" font-weight="bold">2400の壁</text>
+
+                                <!-- Plotted curve path -->
+                                <path id="crit-graph-path" fill="none" stroke="url(#gradient-crit)" stroke-width="3.5" stroke-linecap="round" />
+
+                                <defs>
+                                    <linearGradient id="gradient-crit" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#f59e0b" />
+                                        <stop offset="50%" stop-color="#ea580c" />
+                                        <stop offset="100%" stop-color="#6366f1" />
+                                    </linearGradient>
+                                </defs>
+
+                                <!-- Interactive plot current dot -->
+                                <g id="crit-graph-current-dot" class="hidden">
+                                    <circle id="crit-graph-current-dot-outer" r="10" fill="#f59e0b" fill-opacity="0.2" class="animate-ping" />
+                                    <circle id="crit-graph-current-dot-inner" r="5.5" fill="#f59e0b" stroke="#ffffff" stroke-width="2" />
+                                </g>
+                            </svg>
+                            <div class="absolute top-2 right-2 bg-slate-950/90 border border-slate-800 px-2 py-1 rounded text-[8px] font-bold text-slate-400">
+                                合計実効会心: <span id="crit-graph-badge-text" class="text-amber-400 font-black">--</span> PT
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 計算最終出力カード -->
+                    <div class="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-2xl p-6 relative overflow-hidden shadow-2xl">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -z-10"></div>
+                        <div class="text-center pb-4 border-b border-slate-800/80">
+                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">実質会心発生率</span>
+                            <div class="flex items-baseline justify-center gap-1 mt-4">
+                                <span id="res-final-crit-rate" class="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-yellow-200 tracking-tight drop-shadow-md">--%</span>
+                            </div>
+                            <div id="crit-level-badge-container" class="mt-4 flex justify-center"></div>
+                        </div>
+
+                        <!-- 3ステップブレイクダウン -->
+                        <div class="mt-5 space-y-3">
+                            <div class="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-850">
+                                <div>
+                                    <div class="text-[9px] font-extrabold text-slate-650">STEP 1</div>
+                                    <div class="text-xs font-bold text-slate-250">合計実効会心値</div>
+                                    <div class="text-[9px] text-slate-500 mt-0.5">基本 + 特殊会心 - 敵会心抵抗</div>
+                                </div>
+                                <div class="text-right">
+                                    <span id="res-total-crit" class="text-lg font-extrabold text-amber-400">--</span>
+                                    <span class="text-[9px] text-slate-500 ml-1 font-bold">PT</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-850">
+                                <div>
+                                    <div class="text-[9px] font-extrabold text-slate-650">STEP 2</div>
+                                    <div class="text-xs font-bold text-slate-250">基本基礎会心率</div>
+                                    <div class="text-[9px] text-slate-500 mt-0.5">初期20% + (合計会心 / 30)</div>
+                                </div>
+                                <div class="text-right">
+                                    <span id="res-base-crit-rate" class="text-lg font-extrabold text-amber-400">--%</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-850">
+                                <div>
+                                    <div class="text-[9px] font-extrabold text-slate-650">STEP 3</div>
+                                    <div id="res-step3-label" class="text-xs font-bold text-slate-250">レベル差補正減衰</div>
+                                    <div class="text-[9px] text-slate-500 mt-0.5">格上とのレベル差による補正損失</div>
+                                </div>
+                                <div class="text-right">
+                                    <span id="res-step3-val" class="text-lg font-extrabold">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- カラーゲージインジケータ -->
+                        <div class="mt-5 pt-4 border-t border-slate-900">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-[10px] font-bold text-slate-450 uppercase">ペナルティ危険インジケータ</span>
+                                <span id="crit-gauge-text" class="text-[10px] font-extrabold text-amber-400">--</span>
+                            </div>
+                            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-850 p-0.5">
+                                <div id="crit-danger-gauge" class="h-full rounded-full transition-all duration-300" style="width: 5%"></div>
+                            </div>
+                            <div class="flex justify-between text-[8px] text-slate-500 mt-1 font-semibold">
+                                <span>影響なし (Lv差 0以下)</span>
+                                <span>危険域突入 (+15)</span>
+                                <span>検証限界格上 (+25以上)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB Tab 2: 基礎早見表 -->
+            <div id="crit-sub-table" class="hidden bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-amber-500"></i> 合計会心値 vs 基礎会心率 (標準無補正時の対比データ)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            初期保障値20.00%を基準とし、合計会心値が30上昇するごとに1.00%増加する設計理論をベースにしています。
+                        </p>
+                    </div>
+                    <div class="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-850 text-xs text-slate-400 font-mono">
+                        算式: 20% + (合計会心 / 30)
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="p-4 rounded-xl border border-indigo-500/20 bg-indigo-950/10 flex gap-3">
+                        <i class="fa-solid fa-circle-exclamation text-indigo-400 mt-0.5"></i>
+                        <div class="text-xs text-indigo-200 leading-relaxed">
+                            <strong class="text-slate-100 block mb-1">会心「2400」の検証境界</strong>
+                            本理論式では、合計会心値が「2400」に達した時点で会心率はちょうど100%に達します。この限界値を超えた場合のキャップ上限適用や減衰の仕様について更なる検証が進められています。
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-xl border border-amber-500/20 bg-amber-950/10 flex gap-3">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400 mt-0.5"></i>
+                        <div class="text-xs text-amber-200 leading-relaxed">
+                            <strong class="text-slate-100 block mb-1">数値を同期して即検証</strong>
+                            早見表内の各カードをクリックすると、**その会心値をシミュレーターに自動同期して**すぐにレベル差ペナルティのテストを行えます。
+                        </div>
+                    </div>
+                </div>
+
+                <div id="crit-lookup-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+            </div>
+
+            <!-- SUB Tab 3: 考察＆解説 -->
+            <div id="crit-sub-notes" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Col 1 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm shadow-md">
+                    <h3 class="text-xs md:text-sm font-black text-amber-400 flex items-center gap-2 border-b border-slate-800 pb-3 mb-4 uppercase">
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i> 1. 基本会心率算出のアルゴリズム
+                    </h3>
+                    <ul class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                        <li class="p-3 bg-slate-950/50 rounded-xl border border-slate-900">
+                            <strong class="text-slate-100 block mb-1">基礎仕様の「初期保障20%」</strong>
+                            ステータスシート上の合計会心値が「0」であっても、基礎会心保障枠として<strong class="text-amber-400">20.00% の会心発生率</strong>がシステム側で定義されていると考えられています。
+                        </li>
+                        <li class="p-3 bg-slate-950/50 rounded-xl border border-slate-900">
+                            <strong class="text-slate-100 block mb-1">30ポイント＝1%の均一比例増加</strong>
+                            会心合計値が30上昇するごとに1.00%ずつ綺麗に加算される設計。これにより会心が1500あればそれだけで70.00%近くまで到達します。
+                        </li>
+                        <li class="p-3 bg-slate-950/50 rounded-xl border border-slate-900">
+                            <strong class="text-slate-100 block mb-1">合計会心の内部加算方法</strong>
+                            装備やアビリティ、パッシブによる「会心」に加え、自分が繰り出しているスキル種別（例: 近接職なら近距離会心、弓職なら遠距離会心）を合わせた合計値が会心計算式の基礎値になります。
+                        </li>
+                    </ul>
+                </div>
+                <!-- Col 2 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm shadow-md">
+                    <h3 class="text-xs md:text-sm font-black text-amber-400 flex items-center gap-2 border-b border-slate-800 pb-3 mb-4 uppercase">
+                        <i class="fa-solid fa-trending-down text-rose-500"></i> 2. レベル差補正（デバフペナルティ）
+                    </h3>
+                    <ul class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                        <li class="p-3 bg-slate-950/50 rounded-xl border border-slate-900">
+                            <strong class="text-slate-100 block mb-1">格下へのアタック（ペナルティの飽和収束）</strong>
+                            キャラクターレベル95の際に、レベル1およびレベル60の「格下」ターゲットを攻撃した際の検証データにおいて、観測される実質会心率には全く差がありませんでした。これにより、格下を攻撃してもボーナスはなく、補正ペナルティは0％でフラットに収束します。
+                        </li>
+                        <li class="p-3 bg-slate-950/50 rounded-xl border border-slate-900">
+                            <strong class="text-slate-100 block mb-1">格上への圧倒的な発生低下</strong>
+                            逆にレベル差が+1でもある「格上」に対して攻撃を行う場合、厳しい減衰がかかります。
+                            <div class="bg-slate-950 p-3 rounded-lg border border-slate-900 my-2 text-rose-400 font-medium">
+                                <p class="font-extrabold text-slate-200">主な実測値ベース：</p>
+                                Lv95（合計会心760 / 理論基礎45%相当）がLv120（レベル差+25）を叩いた結果、会心率は実質<strong class="underline text-rose-400 font-black">約13.00%まで低下</strong>。
+                            </div>
+                            レベル差+20前後までは、1Lvあたり1.5％のダイレクトな会心率マイナス補正が入ると考えると辻脄が合います。
+                        </li>
+                    </ul>
+                </div>
+                <!-- Col 3 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur-sm shadow-md">
+                    <h3 class="text-xs md:text-sm font-black text-indigo-400 flex items-center gap-2 border-b border-slate-800 pb-3 mb-4 uppercase">
+                        <i class="fa-solid fa-circle-question text-indigo-400"></i> 3. 未解明・検証が残るファクター
+                    </h3>
+                    <ul class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                        <li class="p-3 bg-slate-950/50 rounded-xl border border-slate-900">
+                            <strong class="text-slate-100 block mb-1">「命中（Accuracy）」ステータスとの連携</strong>
+                            レベル差のあるボス戦で会心率が低下する原因として、レベルペナルティの他に、単純に「命中ステータス」が不足しているため会心発生がブロックされた（あるいは命中しないと会心抽選が行われない）という仮説。このツールの結果は「十分な命中状態」での理論比率を表しています。
+                        </li>
+                        <li class="p-3 bg-slate-950/50 rounded-xl border border-slate-900">
+                            <strong class="text-indigo-455 block mb-1">会心「2400」以降の線形突破</strong>
+                            本数式の直線モデルが正しい場合、会心値2400で「会心率100%」に到達します。これを超える場合の上限キャップ（例：ボスに対しては最大80%までしか適用されない、等）についての追加検証が待たれます。
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
         <!-- FOOTER -->
         <footer class="mt-16 pb-12 text-center text-slate-650 text-[10px] tracking-widest leading-relaxed">
             &copy; 2026 LORD NINE COMPREHENSIVE UTILITY | VERSION 4.0 (STANDALONE PRO)
@@ -596,7 +1006,6 @@
                 color: "text-red-400", 
                 bg: "bg-red-950/20", 
                 border: "border-red-900/35", 
-                label: "物理攻撃・狩り効率UP",
                 activeBg: "bg-red-500/10",
                 activeBorder: "border-red-500/50",
                 activeText: "text-red-300"
@@ -606,7 +1015,6 @@
                 color: "text-fuchsia-400", // 紫ピンク
                 bg: "bg-fuchsia-950/20", 
                 border: "border-fuchsia-900/35", 
-                label: "致命打・クリティカル",
                 activeBg: "bg-fuchsia-500/10",
                 activeBorder: "border-fuchsia-500/50",
                 activeText: "text-fuchsia-300"
@@ -616,7 +1024,6 @@
                 color: "text-indigo-400", 
                 bg: "bg-indigo-950/20", 
                 border: "border-indigo-900/35", 
-                label: "魔法威力・デバフ",
                 activeBg: "bg-indigo-500/10",
                 activeBorder: "border-indigo-500/50",
                 activeText: "text-indigo-300"
@@ -626,7 +1033,6 @@
                 color: "text-cyan-400", // 浅葱色
                 bg: "bg-cyan-950/20", 
                 border: "border-cyan-900/35", 
-                label: "ダメージカット・盾",
                 activeBg: "bg-cyan-500/10",
                 activeBorder: "border-cyan-500/50",
                 activeText: "text-cyan-300"
@@ -636,7 +1042,6 @@
                 color: "text-amber-500", // 琥珀色
                 bg: "bg-amber-950/20", 
                 border: "border-amber-900/35", 
-                label: "精霊属性強化",
                 activeBg: "bg-amber-500/10",
                 activeBorder: "border-amber-500/50",
                 activeText: "text-amber-300"
@@ -646,7 +1051,6 @@
                 color: "text-[#ffb0a5]", // 【調整】さらに薄いパステルサーモンピンク
                 bg: "bg-[#ffb0a5]/5", 
                 border: "border-[#ffb0a5]/25", 
-                label: "ユーティリティ・探索",
                 activeBg: "bg-[#ffb0a5]/10",
                 activeBorder: "border-[#ffb0a5]/50",
                 activeText: "text-[#ffe5e2]"
@@ -656,7 +1060,6 @@
                 color: "text-lime-400", // 緑（少し黄緑より）
                 bg: "bg-lime-950/20", 
                 border: "border-lime-900/35", 
-                label: "HP/マナ回復・生存",
                 activeBg: "bg-lime-500/10",
                 activeBorder: "border-lime-500/50",
                 activeText: "text-lime-300"
@@ -666,7 +1069,6 @@
                 color: "text-yellow-400", // 黄色
                 bg: "bg-yellow-950/20", 
                 border: "border-yellow-900/35", 
-                label: "移動速度・クールダウン軽減",
                 activeBg: "bg-yellow-500/10",
                 activeBorder: "border-yellow-500/50",
                 activeText: "text-yellow-300"
@@ -724,7 +1126,7 @@
 
             // 補助 (cat: 6)
             {name:"慎重な攻撃",cat:6,desc:"ミスヒット（回避）の発生確率をほぼゼロに軽減する。"}, 
-            {name:"闇の武器",cat:6,desc:"通常攻撃に闇属性の追加固定ダメージを付与する。"}, 
+            {name:"闇の武器",cat:6,desc:"通常攻撃に闇属性 of 追加ダメージ。"}, 
             {name:"罠投擲",cat:6,desc:"対象の移動力を奪う減速罠を前方に設置・投擲する。"}, 
             {name:"資源節約",cat:6,desc:"スキル発動時の消費マナ（MP）を確率でゼロにする。"}, 
             {name:"治癒",cat:6,desc:"自身が受ける回復魔法・回復薬の効果をパーセンテージ増幅。"}, 
@@ -777,7 +1179,7 @@
             {
                 name: "デストロイヤー", 
                 role: "近接高火力破壊術・スタン特化", 
-                req: ["瞬間移動", "闇 of 力?", "ギャンブル", "武器研磨", "業火の武器", "鋭利な武器"],
+                req: ["瞬間移動", "闇の力", "ギャンブル", "武器研磨", "業火の武器", "鋭利な武器"],
                 abilities: {
                     1: "[固有アクティブ] 7M内の敵に跳躍して対象の周囲に複合ダメージ(100%+100%)を与え、+80%の確率で2秒間転倒を付与(最大10体). また、自分に3.5秒間ダメージ無効状態を付与する。",
                     100: "防御貫通+50",
@@ -895,9 +1297,11 @@
         let activeTab = "mastery";
         let categoryExpanded = {1:true, 2:true, 3:true, 4:true, 5:true, 6:true, 7:true, 8:true};
         let savedBuilds = { 1: [], 2: [], 3: [] };
-        
-        // 経験値テーブルの表示モード（簡易表示：false, 全レベル：true）
         let showAllLevels = false; 
+
+        // 会心セクション用ステート
+        let critSubSection = 'simulator';
+        let critModel = 'subtraction';
 
         let confirmPromiseResolver = null;
 
@@ -944,7 +1348,7 @@
             const card = document.getElementById('backup-card');
             card.classList.toggle('hidden');
             if(!card.classList.contains('hidden')) {
-                const currentData = localStorage.getItem('l9_comprehensive_storage_v9');
+                const currentData = localStorage.getItem('l9_comprehensive_storage_v10');
                 document.getElementById('backup-string').value = currentData || "";
             }
         }
@@ -967,7 +1371,7 @@
                 if (parsed.lv === undefined || parsed.sims === undefined) {
                     throw new Error("Invalid schema structure");
                 }
-                localStorage.setItem('l9_comprehensive_storage_v9', val);
+                localStorage.setItem('l9_comprehensive_storage_v10', val);
                 loadLocal();
                 renderSims();
                 initHiddenJob();
@@ -1066,6 +1470,9 @@
             
             // 職業タブをレベル変動に完全に追従させるための再レンダリング呼び出し
             renderJobDetails(); 
+
+            // 会心率計算を連動
+            calculateCrit();
             
             saveLocal();
         }
@@ -1302,7 +1709,7 @@
             saveLocal();
         }
 
-        // 職業詳細描画 (解放必須アビリティの系統名バッジを常に横へ表示して視認性を強化)
+        // 職業詳細描画 (解放必須アビリティの選択枠の色を系統色と完全に同期)
         function renderJobDetails() {
             const job = JOBS.find(j => j.name === activeJobName);
             if (!job) return;
@@ -1594,7 +2001,12 @@
             document.getElementById('tab-' + t).classList.add('tab-active');
             document.getElementById('tab-' + t).classList.remove('text-slate-500');
             
-            // タブ切替時の自動スクロールは防止
+            if (t === 'mastery') {
+                scrollToCurrentLevel();
+            }
+            if (t === 'crit') {
+                calculateCrit(); // 会心タブに切り替わった時に再計算＆再描画
+            }
             saveLocal();
         }
 
@@ -1608,6 +2020,382 @@
                     }
                 }, 100);
             } catch(e) {}
+        }
+
+        // ==============================================
+        // === CORE CRITICAL SIMULATION ENGINE (会心計算・グラフ描画) ===
+        // ==============================================
+        function syncCritValue(sourceId, targetId) {
+            const src = document.getElementById(sourceId);
+            const tgt = document.getElementById(targetId);
+            if (src && tgt) {
+                tgt.value = src.value;
+            }
+            calculateCrit();
+        }
+
+        function adjustCritVal(inputId, diff) {
+            const el = document.getElementById(inputId);
+            if (el) {
+                let current = parseInt(el.value) || 0;
+                let min = parseInt(el.min) || 0;
+                let max = parseInt(el.max) || 3000;
+                el.value = Math.max(min, Math.min(max, current + diff));
+                
+                // 対になるスライダー側を同期
+                const sliderId = inputId.replace('input-', 'range-');
+                const slider = document.getElementById(sliderId);
+                if (slider) slider.value = el.value;
+
+                calculateCrit();
+            }
+        }
+
+        function applyCritMonsterPreset(type) {
+            const rangeEnemyLevel = document.getElementById('range-enemy-level');
+            const inputEnemyLevel = document.getElementById('input-enemy-level');
+            const rangeEnemyResist = document.getElementById('range-enemy-resist');
+            const inputEnemyResist = document.getElementById('input-enemy-resist');
+
+            switch (type) {
+                case 'scarecrow':
+                    rangeEnemyLevel.value = 60;
+                    inputEnemyLevel.value = 60;
+                    rangeEnemyResist.value = 0;
+                    inputEnemyResist.value = 0;
+                    break;
+                case 'mid-boss':
+                    rangeEnemyLevel.value = 110;
+                    inputEnemyLevel.value = 110;
+                    rangeEnemyResist.value = 100;
+                    inputEnemyResist.value = 100;
+                    break;
+                case 'high-boss':
+                    rangeEnemyLevel.value = 120;
+                    inputEnemyLevel.value = 120;
+                    rangeEnemyResist.value = 250;
+                    inputEnemyResist.value = 250;
+                    break;
+                case 'extreme-boss':
+                    rangeEnemyLevel.value = 130;
+                    inputEnemyLevel.value = 130;
+                    rangeEnemyResist.value = 400;
+                    inputEnemyResist.value = 400;
+                    break;
+            }
+            calculateCrit();
+        }
+
+        function applyCritScenarioPreset(preset) {
+            const config = {
+                'level-120':   { myCrit: 500,  spec: 260, resist: 0,   myLv: 95, enemyLv: 120, model: 'subtraction' },
+                'level-60':    { myCrit: 500,  spec: 260, resist: 0,   myLv: 95, enemyLv: 60,  model: 'subtraction' },
+                'crit-2400':   { myCrit: 1500, spec: 900, resist: 0,   myLv: 95, enemyLv: 95,  model: 'subtraction' },
+                'resist-test': { myCrit: 600,  spec: 300, resist: 150, myLv: 95, enemyLv: 100, model: 'subtraction' }
+            };
+
+            const data = config[preset];
+            if (!data) return;
+
+            document.getElementById('input-my-crit').value = data.myCrit;
+            document.getElementById('range-my-crit').value = data.myCrit;
+
+            document.getElementById('input-spec-crit').value = data.spec;
+            document.getElementById('range-spec-crit').value = data.spec;
+
+            document.getElementById('input-enemy-resist').value = data.resist;
+            document.getElementById('range-enemy-resist').value = data.resist;
+
+            document.getElementById('input-my-level').value = data.myLv;
+            document.getElementById('range-my-level').value = data.myLv;
+
+            document.getElementById('input-enemy-level').value = data.enemyLv;
+            document.getElementById('range-enemy-level').value = data.enemyLv;
+
+            document.getElementById('select-calc-model').value = data.model;
+
+            calculateCrit();
+            showToast('<i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>', '考察用の検証シナリオを読み込みました。');
+        }
+
+        function switchCritSubSection(sec) {
+            critSubSection = sec;
+            document.getElementById('crit-sub-simulator').classList.add('hidden');
+            document.getElementById('crit-sub-table').classList.add('hidden');
+            document.getElementById('crit-sub-notes').classList.add('hidden');
+            
+            document.getElementById('btn-crit-sub-simulator').className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 text-slate-400 hover:text-slate-200";
+            document.getElementById('btn-crit-sub-table').className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 text-slate-400 hover:text-slate-200";
+            document.getElementById('btn-crit-sub-notes').className = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 text-slate-400 hover:text-slate-200";
+
+            document.getElementById('crit-sub-' + sec).classList.remove('hidden');
+            
+            let activeBtnClass = "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-150 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-orange-950/30";
+            document.getElementById('btn-crit-sub-' + sec).className = activeBtnClass;
+
+            if (sec === 'table') {
+                renderCritLookupTable();
+            }
+            saveLocal();
+        }
+
+        function toggleCritDevSettings() {
+            const panel = document.getElementById('crit-dev-panel');
+            const arrow = document.getElementById('crit-dev-arrow');
+            panel.classList.toggle('hidden');
+            if (panel.classList.contains('hidden')) {
+                arrow.className = "fa-solid fa-chevron-right text-slate-500 transition-transform duration-200";
+            } else {
+                arrow.className = "fa-solid fa-chevron-right text-amber-500 rotate-90 transition-transform duration-200";
+            }
+        }
+
+        function calculateCrit() {
+            const myCrit = parseInt(document.getElementById('input-my-crit').value) || 0;
+            const specCrit = parseInt(document.getElementById('input-spec-crit').value) || 0;
+            const enemyResist = parseInt(document.getElementById('input-enemy-resist').value) || 0;
+            const myLevel = parseInt(document.getElementById('input-my-level').value) || 95;
+            const enemyLevel = parseInt(document.getElementById('input-enemy-level').value) || 120;
+            
+            const selectModel = document.getElementById('select-calc-model').value || 'subtraction';
+            const baseCritIncrement = parseInt(document.getElementById('input-crit-increment').value) || 30;
+            const subPenaltyRate = parseFloat(document.getElementById('input-penalty-rate').value) || 1.5;
+
+            // 1. 合計実効会心
+            const totalCrit = Math.max(0, myCrit + specCrit - enemyResist);
+
+            // 2. 基礎会心率の計算
+            const baseCritRate = 20 + (totalCrit / baseCritIncrement);
+
+            // 3. レベル差の算出
+            const levelDiff = enemyLevel - myLevel;
+
+            // 4. ペナルティ補正ロジック
+            let penaltyValue = 0;
+            let multiplierValue = 1.0;
+
+            if (levelDiff > 0) {
+                if (levelDiff <= 20) {
+                    penaltyValue = levelDiff * subPenaltyRate;
+                    multiplierValue = Math.max(0.3, 1.0 - (levelDiff * 0.035));
+                } else {
+                    penaltyValue = (20 * subPenaltyRate) + (levelDiff - 20) * (subPenaltyRate / 3);
+                    multiplierValue = Math.max(0.1, 0.3 - ((levelDiff - 20) * 0.003));
+                }
+            } else {
+                penaltyValue = 0;
+                multiplierValue = 1.0;
+            }
+
+            // 5. 最終会心率
+            let finalCritRate = 0;
+            if (selectModel === 'subtraction') {
+                finalCritRate = Math.max(0, baseCritRate - penaltyValue);
+            } else {
+                finalCritRate = Math.max(0, baseCritRate * multiplierValue);
+            }
+
+            // 数値出力のレンダリング
+            document.getElementById('res-total-crit').innerText = totalCrit;
+            document.getElementById('res-base-crit-rate').innerText = baseCritRate.toFixed(2) + "%";
+            document.getElementById('res-final-crit-rate').innerText = finalCritRate.toFixed(2) + "%";
+
+            // レベルペナルティバッジ
+            const badgeContainer = document.getElementById('crit-level-badge-container');
+            if (levelDiff > 0) {
+                badgeContainer.innerHTML = `
+                    <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black bg-rose-950/80 border border-rose-500/30 text-rose-400 shadow-md shadow-rose-950/20">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        格上ペナルティ適用中 (Lv差 +${levelDiff})
+                    </span>
+                `;
+            } else if (levelDiff < 0) {
+                badgeContainer.innerHTML = `
+                    <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 shadow-md shadow-emerald-950/20">
+                        <i class="fa-solid fa-circle-check"></i>
+                        格下ボーナス（減衰ゼロ維持）
+                    </span>
+                `;
+            } else {
+                badgeContainer.innerHTML = `
+                    <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[10px] font-black bg-slate-950 border border-slate-850 text-slate-400">
+                        同格マッチング (等倍レート)
+                    </span>
+                `;
+            }
+
+            // 式予測テキスト更新
+            const formulaBox = document.getElementById('crit-formula-text');
+            if (selectModel === 'subtraction') {
+                formulaBox.innerHTML = `
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-2">予測されている会心率数式</div>
+                    <div class="space-y-2">
+                        <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 font-mono text-xs text-amber-400/90 text-center overflow-x-auto select-all">
+                            会心率 = 20% + (合計会心 / ${baseCritIncrement}) - (レベル差 * ${subPenaltyRate}%)
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            <strong class="text-amber-400">減算補正モデル：</strong> 
+                            基礎会心率（20%＋ステータス依存値）から、格上の敵とのレベル差に応じたペナルティ値（％）をダイレクトにマイナスする仕組み。現在の実測結果との互換性が極めて高い検証本命のモデルです。
+                        </p>
+                    </div>
+                `;
+                document.getElementById('res-step3-val').innerText = `-${penaltyValue.toFixed(1)}%`;
+                document.getElementById('res-step3-val').className = "text-lg font-extrabold text-rose-400";
+                document.getElementById('res-step3-label').innerText = "レベル差補正損失(減算値)";
+            } else {
+                formulaBox.innerHTML = `
+                    <div class="text-[10px] font-bold text-slate-500 uppercase mb-2">予測されている会心率数式</div>
+                    <div class="space-y-2">
+                        <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 font-mono text-xs text-amber-400/90 text-center overflow-x-auto select-all">
+                            会心率 = (20% + (合計会心 / ${baseCritIncrement})) * レベル差補正倍率
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            <strong class="text-amber-400">乗算補正モデル：</strong>
+                            基礎会心率にレベル差に基づく割合デバフ（例: レベル差20で30%に弱化など）を乗算する方式。高ステータスビルドほど、レベル差によってカットされる実数が大きくなります。
+                        </p>
+                    </div>
+                `;
+                document.getElementById('res-step3-val').innerText = `${Math.round(multiplierValue * 100)}%`;
+                document.getElementById('res-step3-val').className = "text-lg font-extrabold text-emerald-400";
+                document.getElementById('res-step3-label').innerText = "レベル差補正倍率(乗算値)";
+            }
+
+            // 危険インジケータゲージ制御
+            const gauge = document.getElementById('crit-danger-gauge');
+            const gaugeText = document.getElementById('crit-gauge-text');
+            if (levelDiff <= 0) {
+                gauge.style.width = '5%';
+                gauge.className = "h-full rounded-full transition-all duration-300 bg-emerald-500";
+                gaugeText.innerText = "パーフェクト出力";
+            } else {
+                const lossPct = Math.min(100, (levelDiff / 30) * 100);
+                gauge.style.width = `${lossPct}%`;
+                if (levelDiff <= 15) {
+                    gauge.className = "h-full rounded-full transition-all duration-300 bg-amber-500";
+                } else {
+                    gauge.className = "h-full rounded-full transition-all duration-300 bg-gradient-to-r from-orange-500 to-rose-600";
+                }
+                const lossAmountStr = selectModel === 'subtraction' ? penaltyValue.toFixed(1) + '%' : (100 - Math.round(multiplierValue * 100)) + '%';
+                gaugeText.innerText = `損失: -${lossAmountStr}`;
+            }
+
+            // 動的SVGグラフの再描画
+            drawCritGraph(myLevel, enemyLevel, selectModel, baseCritIncrement, subPenaltyRate, totalCrit, finalCritRate);
+        }
+
+        function drawCritGraph(myLevel, enemyLevel, calcModel, baseCritIncrement, subPenaltyRate, currentTotalCrit, currentFinalCritRate) {
+            const width = 500;
+            const height = 200;
+            let pathD = "";
+            
+            for (let xVal = 0; xVal <= 3000; xVal += 50) {
+                const tempTotalCrit = Math.max(0, xVal);
+                const tempBaseCritRate = 20 + (tempTotalCrit / baseCritIncrement);
+                const levelDiff = enemyLevel - myLevel;
+                
+                let tempPenalty = 0;
+                let tempMultiplier = 1.0;
+                
+                if (levelDiff > 0) {
+                    if (levelDiff <= 20) {
+                        tempPenalty = levelDiff * subPenaltyRate;
+                        tempMultiplier = Math.max(0.3, 1.0 - (levelDiff * 0.035));
+                    } else {
+                        tempPenalty = (20 * subPenaltyRate) + (levelDiff - 20) * (subPenaltyRate / 3);
+                        tempMultiplier = Math.max(0.1, 0.3 - ((levelDiff - 20) * 0.003));
+                    }
+                }
+
+                let tempFinalCrit = 0;
+                if (calcModel === 'subtraction') {
+                    tempFinalCrit = Math.max(0, tempBaseCritRate - tempPenalty);
+                } else {
+                    tempFinalCrit = Math.max(0, tempBaseCritRate * tempMultiplier);
+                }
+
+                const px = (xVal / 3000) * width;
+                const py = height - (Math.min(120, tempFinalCrit) / 120) * height;
+                pathD += `${xVal === 0 ? 'M' : 'L'} ${px} ${py} `;
+            }
+
+            const pathElement = document.getElementById('crit-graph-path');
+            if (pathElement) {
+                pathElement.setAttribute('d', pathD);
+            }
+
+            // 現在位置のプロットピン
+            const dotGroup = document.getElementById('crit-graph-current-dot');
+            const dotOuter = document.getElementById('crit-graph-current-dot-outer');
+            const dotInner = document.getElementById('crit-graph-current-dot-inner');
+            
+            const cx = (currentTotalCrit / 3000) * width;
+            const cy = height - (Math.min(120, currentFinalCritRate) / 120) * height;
+
+            if (dotGroup && dotOuter && dotInner) {
+                if (cx >= 0 && cx <= width && cy >= 0 && cy <= height) {
+                    dotGroup.setAttribute('class', 'block');
+                    dotOuter.setAttribute('cx', cx);
+                    dotOuter.setAttribute('cy', cy);
+                    dotInner.setAttribute('cx', cx);
+                    dotInner.setAttribute('cy', cy);
+                } else {
+                    dotGroup.setAttribute('class', 'hidden');
+                }
+            }
+
+            const badge = document.getElementById('crit-graph-badge-text');
+            if (badge) {
+                badge.innerText = `${currentTotalCrit}`;
+            }
+        }
+
+        // 早見表サブタブのレンダリング
+        function renderCritLookupTable() {
+            const container = document.getElementById('crit-lookup-grid');
+            const baseCritIncrement = parseInt(document.getElementById('input-crit-increment').value) || 30;
+            let cardsHtml = "";
+
+            for (let crit = 0; crit <= 3000; crit += 150) {
+                const rate = 20 + (crit / baseCritIncrement);
+                const isMilestone = (crit === 2400);
+                const statusStr = crit >= 2400 ? '検証限界域' : '確信域';
+
+                cardsHtml += `
+                    <div onclick="selectCritLookupValue(${crit})" class="p-3 rounded-xl border text-center transition-all cursor-pointer group hover:scale-[1.02] ${
+                        isMilestone 
+                            ? 'bg-gradient-to-b from-indigo-950/40 to-slate-950 border-indigo-500 shadow-md shadow-indigo-950/30' 
+                            : crit > 2400
+                            ? 'bg-slate-950/40 border-slate-850 hover:border-indigo-800/60'
+                            : 'bg-slate-950/80 border-slate-900 hover:border-amber-500/40'
+                    }">
+                        <div class="text-[10px] font-bold text-slate-500 group-hover:text-amber-500 transition-colors">合計会心値</div>
+                        <div class="text-lg font-black text-slate-200 mt-1">${crit}</div>
+                        <div class="w-full h-px bg-slate-900 my-2"></div>
+                        <div class="text-[10px] font-bold text-slate-500">基礎会心率</div>
+                        <div class="text-base font-black mt-1 ${isMilestone ? 'text-indigo-400' : 'text-amber-400'}">${rate.toFixed(1)}%</div>
+                        <span class="inline-block mt-2 text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                            crit >= 2400 ? 'bg-indigo-950 border border-indigo-800/40 text-indigo-400' : 'bg-slate-900 border border-slate-850 text-slate-500'
+                        }">${statusStr}</span>
+                    </div>
+                `;
+            }
+            container.innerHTML = cardsHtml;
+        }
+
+        // 早見表からシミュレーターへの数値連動処理
+        function selectCritLookupValue(critVal) {
+            document.getElementById('input-my-crit').value = critVal;
+            document.getElementById('range-my-crit').value = critVal;
+            document.getElementById('input-spec-crit').value = 0;
+            document.getElementById('range-spec-crit').value = 0;
+            document.getElementById('input-enemy-resist').value = 0;
+            document.getElementById('range-enemy-resist').value = 0;
+            document.getElementById('input-my-level').value = 95;
+            document.getElementById('range-my-level').value = 95;
+            document.getElementById('input-enemy-level').value = 95;
+            document.getElementById('range-enemy-level').value = 95;
+
+            switchCritSubSection('simulator');
         }
 
         // === LOCAL STORAGE SYSTEM ===
@@ -1633,9 +2421,21 @@
                 activeTab: activeTab,
                 categoryExpanded: categoryExpanded,
                 savedBuilds: savedBuilds,
-                showAllLevels: showAllLevels
+                showAllLevels: showAllLevels,
+                // 会心パラメータの自動保存追加
+                critData: {
+                    myCrit: document.getElementById('input-my-crit').value,
+                    specCrit: document.getElementById('input-spec-crit').value,
+                    enemyResist: document.getElementById('input-enemy-resist').value,
+                    myLevel: document.getElementById('input-my-level').value,
+                    enemyLevel: document.getElementById('input-enemy-level').value,
+                    calcModel: document.getElementById('select-calc-model').value,
+                    subSection: critSubSection,
+                    baseCritIncrement: document.getElementById('input-crit-increment').value,
+                    subPenaltyRate: document.getElementById('input-penalty-rate').value
+                }
             };
-            localStorage.setItem('l9_comprehensive_storage_v9', JSON.stringify(data));
+            localStorage.setItem('l9_comprehensive_storage_v10', JSON.stringify(data));
             
             const ind = document.getElementById('save-indicator');
             if (ind) {
@@ -1650,7 +2450,7 @@
         }
 
         function loadLocal() {
-            const raw = localStorage.getItem('l9_comprehensive_storage_v9');
+            const raw = localStorage.getItem('l9_comprehensive_storage_v10');
             if (!raw) {
                 sims = [
                     { id: 1, label: "黄昏の戦場 (一般)", hours: 8, expPerMin: 1500000 },
@@ -1696,13 +2496,39 @@
                     document.getElementById('inv-catalyst-cond').value = d.craft.ip || 0;  // 促進剤
                     document.getElementById('craft-recipe-select').value = d.craft.recipe || "life-core";
                 }
+
+                // 会心データのロード復元
+                if (d.critData) {
+                    document.getElementById('input-my-crit').value = d.critData.myCrit || 500;
+                    document.getElementById('range-my-crit').value = d.critData.myCrit || 500;
+                    
+                    document.getElementById('input-spec-crit').value = d.critData.specCrit || 260;
+                    document.getElementById('range-spec-crit').value = d.critData.specCrit || 260;
+                    
+                    document.getElementById('input-enemy-resist').value = d.critData.enemyResist || 0;
+                    document.getElementById('range-enemy-resist').value = d.critData.enemyResist || 0;
+                    
+                    document.getElementById('input-my-level').value = d.critData.myLevel || 95;
+                    document.getElementById('range-my-level').value = d.critData.myLevel || 95;
+                    
+                    document.getElementById('input-enemy-level').value = d.critData.enemyLevel || 120;
+                    document.getElementById('range-enemy-level').value = d.critData.enemyLevel || 120;
+
+                    document.getElementById('select-calc-model').value = d.critData.calcModel || 'subtraction';
+                    document.getElementById('input-crit-increment').value = d.critData.baseCritIncrement || 30;
+                    document.getElementById('range-crit-increment').value = d.critData.baseCritIncrement || 30;
+                    document.getElementById('input-penalty-rate').value = d.critData.subPenaltyRate || 1.5;
+                    document.getElementById('range-penalty-rate').value = d.critData.subPenaltyRate || 1.5;
+
+                    critSubSection = d.critData.subSection || 'simulator';
+                }
             } catch (e) {
                 console.error("Storage corrupted. Re-init system.");
             }
         }
 
         function resetData() {
-            localStorage.removeItem('l9_comprehensive_storage_v9');
+            localStorage.removeItem('l9_comprehensive_storage_v10');
             location.reload();
         }
 
@@ -1716,6 +2542,7 @@
             renderSims();
             initHiddenJob();
             switchCraftRecipe(); // 初期ロード時にレシピの選択ビューを正確に切り替え
+            switchCritSubSection(critSubSection); // 会心サブセクションビューの切り替え
             calculate();
             switchTab(activeTab);
 
@@ -1723,7 +2550,10 @@
                 'input-lv', 'input-target-lv', 'input-percent', 'input-minexp', 
                 'craft-target-high', 'craft-target-normal', 
                 'inv-shards', 'inv-ore', 'inv-ore-cond',
-                'inv-catalyst', 'inv-catalyst-cond'
+                'inv-catalyst', 'inv-catalyst-cond',
+                'input-my-crit', 'input-spec-crit', 'input-enemy-resist',
+                'input-my-level', 'input-enemy-level', 'select-calc-model',
+                'input-crit-increment', 'input-penalty-rate'
             ];
             inputIDs.forEach(id => {
                 const el = document.getElementById(id);
